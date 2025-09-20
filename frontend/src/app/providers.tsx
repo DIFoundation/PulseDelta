@@ -7,11 +7,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { blockdagPrimordial } from "../chains"
 
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID || ""
-console.log(projectId)
 
 const metadata = {
-	name: "BlockDAG Starter Kit",
-	description: "BlockDAG Starter Kit Web3 App",
+	name: "PulseDelta | Prediction",
+	description: "Prediction site on BLOCKDAG",
 	url: "https://blockdag.network",
 	icons: ["https://avatars.githubusercontent.com/u/37784886"],
 }

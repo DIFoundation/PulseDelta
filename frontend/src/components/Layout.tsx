@@ -1,3 +1,5 @@
+"use client"
+
 import { ReactNode } from "react"
 import { Wallet, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"

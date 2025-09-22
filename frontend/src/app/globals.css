@@ -2,68 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
-/* PredictChain Design System - Modern Web3 Prediction Platform
-All colors MUST be HSL.
+/* PulseDelta Design System - Glassmorphism Web3 Prediction Market
+All colors MUST be HSL for proper theming support.
 */
 
 @layer base {
     :root {
-        /* Base colors - Dark theme for Web3 aesthetic */
-        --background: 222 47% 6%;
-        --foreground: 210 40% 98%;
+        /* PulseDelta Brand Colors */
+        --primary: 248 63% 67%;
+        /* #6C5CE7 - Violet */
+        --primary-foreground: 0 0% 100%;
 
-        --card: 224 47% 10%;
-        --card-foreground: 210 40% 98%;
+        --accent-success: 160 64% 40%;
+        /* #00B894 - Green */
+        --accent-success-foreground: 0 0% 100%;
 
-        --popover: 224 47% 10%;
-        --popover-foreground: 210 40% 98%;
+        --accent-danger: 2 70% 73%;
+        /* #FF7675 - Coral */
+        --accent-danger-foreground: 0 0% 100%;
 
-        /* Primary gradient - Deep blue to purple for trust & technology */
-        --primary: 240 75% 55%;
-        --primary-foreground: 210 40% 98%;
-        --primary-glow: 260 75% 65%;
+        /* Glassmorphism Backgrounds */
+        --background: 225 25% 97%;
+        /* #F6F7FB */
+        --foreground: 218 30% 8%;
+        /* #0F172A */
 
-        /* Secondary - Lighter card backgrounds */
-        --secondary: 224 47% 14%;
-        --secondary-foreground: 210 40% 98%;
+        --card: 0 0% 100% / 0.7;
+        /* rgba(255,255,255,0.7) */
+        --card-foreground: 218 30% 8%;
 
-        --muted: 224 47% 16%;
-        --muted-foreground: 215 20% 65%;
+        --glass-surface: 0 0% 100% / 0.8;
+        --glass-border: 0 0% 100% / 0.2;
 
-        --accent: 260 75% 65%;
-        --accent-foreground: 210 40% 98%;
+        /* UI Elements */
+        --secondary: 225 25% 95%;
+        --secondary-foreground: 218 20% 20%;
 
-        /* Status colors for predictions */
-        --success: 120 75% 55%;
-        --success-foreground: 210 40% 98%;
+        --muted: 225 20% 92%;
+        --muted-foreground: 218 15% 50%;
 
-        --warning: 45 90% 60%;
-        --warning-foreground: 224 47% 10%;
+        --accent: 248 63% 67%;
+        --accent-foreground: 0 0% 100%;
 
-        --destructive: 0 84% 60%;
-        --destructive-foreground: 210 40% 98%;
+        --destructive: 2 70% 73%;
+        --destructive-foreground: 0 0% 100%;
 
-        --border: 224 47% 20%;
-        --input: 224 47% 16%;
-        --ring: 240 75% 55%;
+        --border: 220 15% 88%;
+        --input: 220 15% 88%;
+        --ring: 248 63% 67%;
 
-        /* Design tokens */
         --radius: 0.75rem;
-
-        /* Gradients */
-        --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-        --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(120 75% 45%));
-        --gradient-warning: linear-gradient(135deg, hsl(var(--warning)), hsl(45 90% 50%));
-        --gradient-card: linear-gradient(135deg, hsl(var(--card)), hsl(224 47% 12%));
-
-        /* Shadows */
-        --shadow-glow: 0 0 40px hsl(var(--primary) / 0.3);
-        --shadow-card: 0 10px 30px -5px hsl(224 47% 4% / 0.5);
-        --shadow-success: 0 0 30px hsl(var(--success) / 0.4);
-
-        /* Transitions */
-        --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
         --sidebar-background: 0 0% 98%;
 
@@ -83,33 +71,44 @@ All colors MUST be HSL.
     }
 
     .dark {
-        --background: 222.2 84% 4.9%;
-        --foreground: 210 40% 98%;
+        /* Dark Mode - Deep Space Theme */
+        --background: 227 50% 8%;
+        /* #0B1020 */
+        --foreground: 214 32% 91%;
+        /* #E6EEF8 */
 
-        --card: 222.2 84% 4.9%;
-        --card-foreground: 210 40% 98%;
+        --card: 226 25% 12% / 0.6;
+        /* rgba(20,22,30,0.6) */
+        --card-foreground: 214 32% 91%;
 
-        --popover: 222.2 84% 4.9%;
-        --popover-foreground: 210 40% 98%;
+        --glass-surface: 226 25% 12% / 0.8;
+        --glass-border: 226 25% 25% / 0.3;
 
-        --primary: 210 40% 98%;
-        --primary-foreground: 222.2 47.4% 11.2%;
+        --primary: 248 63% 67%;
+        /* Keep violet consistent */
+        --primary-foreground: 0 0% 100%;
 
-        --secondary: 217.2 32.6% 17.5%;
-        --secondary-foreground: 210 40% 98%;
+        --accent-success: 160 64% 40%;
+        --accent-success-foreground: 0 0% 100%;
 
-        --muted: 217.2 32.6% 17.5%;
-        --muted-foreground: 215 20.2% 65.1%;
+        --accent-danger: 2 70% 73%;
+        --accent-danger-foreground: 0 0% 100%;
 
-        --accent: 217.2 32.6% 17.5%;
-        --accent-foreground: 210 40% 98%;
+        --secondary: 226 25% 15%;
+        --secondary-foreground: 214 25% 85%;
 
-        --destructive: 0 62.8% 30.6%;
-        --destructive-foreground: 210 40% 98%;
+        --muted: 226 20% 18%;
+        --muted-foreground: 214 20% 65%;
 
-        --border: 217.2 32.6% 17.5%;
-        --input: 217.2 32.6% 17.5%;
-        --ring: 212.7 26.8% 83.9%;
+        --accent: 248 63% 67%;
+        --accent-foreground: 0 0% 100%;
+
+        --destructive: 2 70% 73%;
+        --destructive-foreground: 0 0% 100%;
+
+        --border: 226 20% 20%;
+        --input: 226 20% 20%;
+        --ring: 248 63% 67%;
         --sidebar-background: 240 5.9% 10%;
         --sidebar-foreground: 240 4.8% 95.9%;
         --sidebar-primary: 224.3 76.3% 48%;
@@ -127,66 +126,45 @@ All colors MUST be HSL.
     }
 
     body {
-        @apply bg-background text-foreground;
+        @apply bg-background text-foreground antialiased;
+    }
+
+    /* Glassmorphism Base Styles */
+    .glass {
+        background: hsl(var(--glass-surface));
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid hsl(var(--glass-border));
+    }
+
+    .glass-card {
+        @apply glass rounded-2xl shadow-lg;
+        box-shadow: 0 6px 18px hsla(217, 25%, 8%, 0.12);
+    }
+
+    .dark .glass-card {
+        box-shadow: 0 6px 20px hsla(217, 50%, 4%, 0.3);
     }
 }
 
 @layer components {
 
-    /* Gradient backgrounds */
-    .bg-gradient-primary {
-        background: var(--gradient-primary);
+    /* Trading Specific Styles */
+    .buy-gradient {
+        background: linear-gradient(135deg,
+                hsl(var(--accent-success)) 0%,
+                hsl(var(--accent-success) / 0.8) 100%);
     }
 
-    .bg-gradient-success {
-        background: var(--gradient-success);
+    .sell-gradient {
+        background: linear-gradient(135deg,
+                hsl(var(--accent-danger)) 0%,
+                hsl(var(--accent-danger) / 0.8) 100%);
     }
 
-    .bg-gradient-warning {
-        background: var(--gradient-warning);
-    }
-
-    .bg-gradient-card {
-        background: var(--gradient-card);
-    }
-
-    /* Glow effects */
-    .glow-primary {
-        box-shadow: var(--shadow-glow);
-    }
-
-    .glow-success {
-        box-shadow: var(--shadow-success);
-    }
-
-    /* Card shadows */
-    .shadow-card {
-        box-shadow: var(--shadow-card);
-    }
-
-    /* Smooth transitions */
-    .transition-smooth {
-        transition: var(--transition-smooth);
-    }
-
-    .transition-bounce {
-        transition: var(--transition-bounce);
-    }
-
-    /* Hover effects */
-    .hover-lift {
-        @apply transition-smooth hover:scale-105 hover:shadow-card;
-    }
-
-    .hover-glow {
-        @apply transition-smooth hover:glow-primary;
-    }
-
-    /* Text gradients */
-    .text-gradient-primary {
-        background: var(--gradient-primary);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+    .primary-gradient {
+        background: linear-gradient(135deg,
+                hsl(var(--primary)) 0%,
+                hsl(var(--primary) / 0.8) 100%);
     }
 }

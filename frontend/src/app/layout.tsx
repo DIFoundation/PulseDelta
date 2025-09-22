@@ -3,23 +3,25 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import "./App.css"
 import { Providers } from "./providers"
+import { Layout } from "@/components/Layout"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
 	title: "PulseDelta | Prediction",
 	description: "Prediction site on BLOCKDAG",
+	icons: {
+		icon: "/favicon.ico",
+	},
 }
 
-export default function RootLayout({
-	children,
-}: Readonly<{
-	children: React.ReactNode
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
 		<html lang="en">
 			<body className={inter.className}>
-				<Providers>{children}</Providers>
+				<Providers>
+					<Layout>{children}</Layout>
+				</Providers>
 			</body>
 		</html>
 	)

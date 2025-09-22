@@ -2,20 +2,169 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* PulseDelta Design System - Glassmorphism Web3 Prediction Market
+All colors MUST be HSL for proper theming support.
+*/
+
+@layer base {
+    :root {
+        /* PulseDelta Brand Colors */
+        --primary: 248 63% 67%;
+        /* #6C5CE7 - Violet */
+        --primary-foreground: 0 0% 100%;
+
+        --accent-success: 160 64% 40%;
+        /* #00B894 - Green */
+        --accent-success-foreground: 0 0% 100%;
+
+        --accent-danger: 2 70% 73%;
+        /* #FF7675 - Coral */
+        --accent-danger-foreground: 0 0% 100%;
+
+        /* Glassmorphism Backgrounds */
+        --background: 225 25% 97%;
+        /* #F6F7FB */
+        --foreground: 218 30% 8%;
+        /* #0F172A */
+
+        --card: 0 0% 100% / 0.7;
+        /* rgba(255,255,255,0.7) */
+        --card-foreground: 218 30% 8%;
+
+        --glass-surface: 0 0% 100% / 0.8;
+        --glass-border: 0 0% 100% / 0.2;
+
+        /* UI Elements */
+        --secondary: 225 25% 95%;
+        --secondary-foreground: 218 20% 20%;
+
+        --muted: 225 20% 92%;
+        --muted-foreground: 218 15% 50%;
+
+        --accent: 248 63% 67%;
+        --accent-foreground: 0 0% 100%;
+
+        --destructive: 2 70% 73%;
+        --destructive-foreground: 0 0% 100%;
+
+        --border: 220 15% 88%;
+        --input: 220 15% 88%;
+        --ring: 248 63% 67%;
+
+        --radius: 0.75rem;
+
+        --sidebar-background: 0 0% 98%;
+
+        --sidebar-foreground: 240 5.3% 26.1%;
+
+        --sidebar-primary: 240 5.9% 10%;
+
+        --sidebar-primary-foreground: 0 0% 98%;
+
+        --sidebar-accent: 240 4.8% 95.9%;
+
+        --sidebar-accent-foreground: 240 5.9% 10%;
+
+        --sidebar-border: 220 13% 91%;
+
+        --sidebar-ring: 217.2 91.2% 59.8%;
+    }
+
+    .dark {
+        /* Dark Mode - Deep Space Theme */
+        --background: 227 50% 8%;
+        /* #0B1020 */
+        --foreground: 214 32% 91%;
+        /* #E6EEF8 */
+
+        --card: 226 25% 12% / 0.6;
+        /* rgba(20,22,30,0.6) */
+        --card-foreground: 214 32% 91%;
+
+        --glass-surface: 226 25% 12% / 0.8;
+        --glass-border: 226 25% 25% / 0.3;
+
+        --primary: 248 63% 67%;
+        /* Keep violet consistent */
+        --primary-foreground: 0 0% 100%;
+
+        --accent-success: 160 64% 40%;
+        --accent-success-foreground: 0 0% 100%;
+
+        --accent-danger: 2 70% 73%;
+        --accent-danger-foreground: 0 0% 100%;
+
+        --secondary: 226 25% 15%;
+        --secondary-foreground: 214 25% 85%;
+
+        --muted: 226 20% 18%;
+        --muted-foreground: 214 20% 65%;
+
+        --accent: 248 63% 67%;
+        --accent-foreground: 0 0% 100%;
+
+        --destructive: 2 70% 73%;
+        --destructive-foreground: 0 0% 100%;
+
+        --border: 226 20% 20%;
+        --input: 226 20% 20%;
+        --ring: 248 63% 67%;
+        --sidebar-background: 240 5.9% 10%;
+        --sidebar-foreground: 240 4.8% 95.9%;
+        --sidebar-primary: 224.3 76.3% 48%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 240 3.7% 15.9%;
+        --sidebar-accent-foreground: 240 4.8% 95.9%;
+        --sidebar-border: 240 3.7% 15.9%;
+        --sidebar-ring: 217.2 91.2% 59.8%;
+    }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground antialiased;
+    }
+
+    /* Glassmorphism Base Styles */
+    .glass {
+        background: hsl(var(--glass-surface));
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid hsl(var(--glass-border));
+    }
+
+    .glass-card {
+        @apply glass rounded-2xl shadow-lg;
+        box-shadow: 0 6px 18px hsla(217, 25%, 8%, 0.12);
+    }
+
+    .dark .glass-card {
+        box-shadow: 0 6px 20px hsla(217, 50%, 4%, 0.3);
+    }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+
+    /* Trading Specific Styles */
+    .buy-gradient {
+        background: linear-gradient(135deg,
+                hsl(var(--accent-success)) 0%,
+                hsl(var(--accent-success) / 0.8) 100%);
+    }
+
+    .sell-gradient {
+        background: linear-gradient(135deg,
+                hsl(var(--accent-danger)) 0%,
+                hsl(var(--accent-danger) / 0.8) 100%);
+    }
+
+    .primary-gradient {
+        background: linear-gradient(135deg,
+                hsl(var(--primary)) 0%,
+                hsl(var(--primary) / 0.8) 100%);
+    }
 }

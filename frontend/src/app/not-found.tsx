@@ -12,7 +12,7 @@ export default function NotFound() {
 	}, [pathname])
 
 	return (
-		<div className="flex min-h-screen items-center justify-center bg-gray-100">
+		<div className="flex min-h-screen items-center justify-center bg-gray-">
 			<div className="text-center">
 				<h1 className="mb-4 text-4xl font-bold">404</h1>
 				<p className="mb-4 text-xl text-gray-600">Oops! Page not found</p>

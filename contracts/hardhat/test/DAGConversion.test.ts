@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
 describe("DAG to wDAG Conversion", function () {
   async function deployFixture() {
@@ -12,7 +12,9 @@ describe("DAG to wDAG Conversion", function () {
     await collateral.waitForDeployment();
 
     // Deploy required contracts
-    const OutcomeTokenFactory = await ethers.getContractFactory("OutcomeTokenFactory");
+    const OutcomeTokenFactory = await ethers.getContractFactory(
+      "OutcomeTokenFactory"
+    );
     const tokenFactory = await OutcomeTokenFactory.deploy();
     await tokenFactory.waitForDeployment();
 
@@ -20,7 +22,9 @@ describe("DAG to wDAG Conversion", function () {
     const feeRouter = await FeeRouter.deploy(owner.address);
     await feeRouter.waitForDeployment();
 
-    const Oracle = await ethers.getContractFactory("OptimisticCryptoOracleAdapter");
+    const Oracle = await ethers.getContractFactory(
+      "OptimisticCryptoOracleAdapter"
+    );
     const oracle = await Oracle.deploy(
       await collateral.getAddress(),
       ethers.parseEther("100"), // reporter bond
@@ -31,30 +35,57 @@ describe("DAG to wDAG Conversion", function () {
     await oracle.waitForDeployment();
 
     // Deploy BinaryMarketFactory
-    const BinaryMarketFactory = await ethers.getContractFactory("BinaryMarketFactory");
+    const BinaryMarketFactory = await ethers.getContractFactory(
+      "BinaryMarketFactory"
+    );
     const binaryFactory = await BinaryMarketFactory.deploy();
     await binaryFactory.waitForDeployment();
 
-    return { owner, creator, collateral, binaryFactory, tokenFactory, feeRouter, oracle };
+    // Authorize factory with oracle
+    await oracle
+      .connect(owner)
+      .setFactory(await binaryFactory.getAddress(), true);
+
+    return {
+      owner,
+      creator,
+      collateral,
+      binaryFactory,
+      tokenFactory,
+      feeRouter,
+      oracle,
+    };
   }
 
   it("Should convert DAG to wDAG when creating market", async function () {
-    const { creator, collateral, binaryFactory, tokenFactory, feeRouter, oracle } = await loadFixture(deployFixture);
+    const {
+      creator,
+      collateral,
+      binaryFactory,
+      tokenFactory,
+      feeRouter,
+      oracle,
+    } = await loadFixture(deployFixture);
 
     // First, fund the wDAG contract by sending DAG to it
     await creator.sendTransaction({
       to: await collateral.getAddress(),
-      value: ethers.parseEther("10") // Send 10 DAG to wDAG contract
+      value: ethers.parseEther("10"), // Send 10 DAG to wDAG contract
     });
 
-    const startTime = Math.floor(Date.now() / 1000) + 60;
+    const startTime = (await time.latest()) + 60;
     const endTime = startTime + 3600;
     const resolutionDeadline = endTime + 1800;
-    const marketKey = ethers.keccak256(ethers.toUtf8Bytes("dag-conversion-test"));
+    const marketKey = ethers.keccak256(
+      ethers.toUtf8Bytes("dag-conversion-test")
+    );
 
     // Check creator's initial wDAG balance
     const initialBalance = await collateral.balanceOf(creator.address);
-    console.log("Creator initial wDAG balance:", ethers.formatEther(initialBalance));
+    console.log(
+      "Creator initial wDAG balance:",
+      ethers.formatEther(initialBalance)
+    );
 
     // Create market with 1 DAG (converted to wDAG)
     const tx = await binaryFactory.createBinary(
@@ -89,7 +120,9 @@ describe("DAG to wDAG Conversion", function () {
     expect(marketAddress).to.not.be.undefined;
 
     // Check that factory has wDAG (from the conversion)
-    const factoryBalance = await collateral.balanceOf(await binaryFactory.getAddress());
+    const factoryBalance = await collateral.balanceOf(
+      await binaryFactory.getAddress()
+    );
     console.log("Factory wDAG balance:", ethers.formatEther(factoryBalance));
 
     // Check that market has wDAG (transferred from factory)

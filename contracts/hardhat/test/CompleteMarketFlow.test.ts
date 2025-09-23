@@ -69,6 +69,9 @@ describe("Complete Market Flow - End to End", function () {
     // Set reporter in oracle
     await oracle.connect(council).setReporter(reporter.address, true);
 
+    // Authorize factory with oracle
+    await oracle.connect(council).setFactory(await binaryFactory.getAddress(), true);
+
     return {
       owner,
       creator,
@@ -433,8 +436,8 @@ describe("Complete Market Flow - End to End", function () {
     expect(trader1Profit).to.be.gt(0);
     expect(trader3Profit).to.be.gt(0);
 
-    // Verify loser got nothing
-    expect(trader2Loss).to.be.gt(0);
+    // Verify loser got nothing (no loss in pool-based system)
+    expect(trader2Loss).to.equal(0);
 
     // Verify fees were distributed
     expect(creatorFees).to.be.gt(0);

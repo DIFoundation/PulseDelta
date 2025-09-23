@@ -169,9 +169,9 @@ contract MarketMulti {
         uint256 remainingFee = fee - lpFee;
         uint256 protocolFee = remainingFee / 2;
         uint256 creatorFee = remainingFee - protocolFee; // Handle odd numbers
-        
+
         feeRouter.accrue(address(this), protocolFee, creatorFee, lpFee);
-        
+
         // Add LP fees to LP pool
         if (lpFee > 0) {
             lpToken.addFees(lpFee);
@@ -262,35 +262,40 @@ contract MarketMulti {
     function addLiquidity() external payable returns (uint256 lpTokens) {
         if (msg.value == 0) revert("Must send DAG");
         if (state != State.Open) revert("Market not open");
-        
+
         // Convert DAG to wDAG
         wDAG(payable(address(collateral))).deposit{value: msg.value}();
-        
+
         // Add liquidity to LP pool
         lpTokens = lpToken.addLiquidity(msg.sender, msg.value);
-        
+
         return lpTokens;
     }
 
-    function removeLiquidity(uint256 lpTokens) external returns (uint256 wDAGAmount) {
+    function removeLiquidity(
+        uint256 lpTokens
+    ) external returns (uint256 wDAGAmount) {
         if (lpTokens == 0) revert("Zero amount");
-        
+
         // Remove liquidity from LP pool
         wDAGAmount = lpToken.removeLiquidity(msg.sender, lpTokens);
-        
-        // Convert wDAG back to DAG and send to user
-        wDAG(payable(address(collateral))).withdraw(wDAGAmount);
-        payable(msg.sender).transfer(wDAGAmount);
-        
+
+        // Transfer wDAG tokens directly to user (they can withdraw DAG themselves)
+        collateral.transfer(msg.sender, wDAGAmount);
+
         return wDAGAmount;
     }
 
-    function getLPStats() external view returns (
-        uint256 _totalLiquidity,
-        uint256 _totalFees,
-        uint256 _valuePerToken,
-        uint256 _userShare
-    ) {
+    function getLPStats()
+        external
+        view
+        returns (
+            uint256 _totalLiquidity,
+            uint256 _totalFees,
+            uint256 _valuePerToken,
+            uint256 _userShare
+        )
+    {
         return (
             lpToken.totalLiquidity(),
             lpToken.totalFeesEarned(),

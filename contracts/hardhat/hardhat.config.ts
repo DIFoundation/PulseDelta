@@ -28,7 +28,7 @@ const config: HardhatUserConfig = {
       url: "https://rpc.primordial.bdagscan.com",
       accounts: [process.env.DEPLOYER_PRIVATE_KEY || ""],
       chainId: 1043,
-      gasPrice: "auto", // Let ethers.js determine the gas price
+      gasPrice: 1000000000, // 1 Gwei - higher gas price (number, not string)
       gas: 8000000, // Gas limit
       timeout: 200000,
     },

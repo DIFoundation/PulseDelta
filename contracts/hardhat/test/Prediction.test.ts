@@ -33,22 +33,22 @@ describe("Prediction Market Platform", function () {
     await collateral.mint(trader2.address, ethers.parseEther("10000"));
     await collateral.mint(trader3.address, ethers.parseEther("10000"));
     await collateral.mint(reporter.address, ethers.parseEther("1000"));
-    
+
     // Deploy core contracts
     const OutcomeTokenFactory = await ethers.getContractFactory(
       "OutcomeTokenFactory"
     );
     const tokenFactory = await OutcomeTokenFactory.deploy();
     await tokenFactory.waitForDeployment();
-    
+
     const FeeRouter = await ethers.getContractFactory("FeeRouter");
     const feeRouter = await FeeRouter.deploy(owner.address);
     await feeRouter.waitForDeployment();
-    
+
     const Curation = await ethers.getContractFactory("Curation");
     const curation = await Curation.deploy(council.address);
     await curation.waitForDeployment();
-    
+
     const Oracle = await ethers.getContractFactory(
       "OptimisticCryptoOracleAdapter"
     );
@@ -78,10 +78,21 @@ describe("Prediction Market Platform", function () {
     );
     const scalarFactory = await ScalarMarketFactory.deploy();
     await scalarFactory.waitForDeployment();
-    
+
     // Set reporter in oracle
     await oracle.connect(council).setReporter(reporter.address, true);
-    
+
+    // Authorize factories with oracle
+    await oracle
+      .connect(council)
+      .setFactory(await binaryFactory.getAddress(), true);
+    await oracle
+      .connect(council)
+      .setFactory(await multiFactory.getAddress(), true);
+    await oracle
+      .connect(council)
+      .setFactory(await scalarFactory.getAddress(), true);
+
     return {
       owner,
       creator,
@@ -111,13 +122,13 @@ describe("Prediction Market Platform", function () {
         tokenFactory,
         creator,
       } = await loadFixture(deployFixture);
-      
+
       const startTime = (await time.latest()) + 3600; // Start in 1 hour
       const endTime = startTime + 3 * 24 * 3600; // End in 3 days
       const resolutionDeadline = endTime + 24 * 3600; // Resolution 1 day after end
-      
+
       const marketKey = ethers.keccak256(ethers.toUtf8Bytes("test-market"));
-      
+
       const tx = await binaryFactory.createBinary(
         await collateral.getAddress(),
         "Will Bitcoin hit $100k by end of year?",
@@ -133,7 +144,7 @@ describe("Prediction Market Platform", function () {
         resolutionDeadline,
         { value: ethers.parseEther("1000") } // Send DAG as value
       );
-      
+
       const receipt = await tx.wait();
       const event = receipt?.logs.find((log: any) => {
         try {
@@ -145,9 +156,9 @@ describe("Prediction Market Platform", function () {
       });
       const parsedEvent = binaryFactory.interface.parseLog(event!);
       const marketAddress = parsedEvent?.args?.market;
-      
+
       const market = await ethers.getContractAt("MarketBinary", marketAddress);
-      
+
       expect(await market.question()).to.equal(
         "Will Bitcoin hit $100k by end of year?"
       );
@@ -156,7 +167,7 @@ describe("Prediction Market Platform", function () {
       expect(await market.resolutionDeadline()).to.equal(resolutionDeadline);
       expect(await market.creator()).to.equal(creator.address);
     });
-    
+
     it("Should reject invalid time ranges", async function () {
       const {
         binaryFactory,
@@ -166,13 +177,13 @@ describe("Prediction Market Platform", function () {
         tokenFactory,
         creator,
       } = await loadFixture(deployFixture);
-      
+
       const startTime = (await time.latest()) + 3600;
       const endTime = startTime - 1800; // End before start - invalid!
       const resolutionDeadline = endTime + 24 * 3600;
-      
+
       const marketKey = ethers.keccak256(ethers.toUtf8Bytes("invalid-market"));
-      
+
       await expect(
         binaryFactory.createBinary(
           await collateral.getAddress(),
@@ -205,13 +216,13 @@ describe("Prediction Market Platform", function () {
         trader1,
         council,
       } = await loadFixture(deployFixture);
-      
+
       const startTime = (await time.latest()) + 3600; // Start in 1 hour
       const endTime = startTime + 24 * 3600; // End in 1 day
       const resolutionDeadline = endTime + 12 * 3600;
-      
+
       const marketKey = ethers.keccak256(ethers.toUtf8Bytes("future-market"));
-      
+
       const tx = await binaryFactory.createBinary(
         await collateral.getAddress(),
         "Future market",
@@ -227,7 +238,7 @@ describe("Prediction Market Platform", function () {
         resolutionDeadline,
         { value: ethers.parseEther("1000") } // Send DAG as value
       );
-      
+
       const receipt = await tx.wait();
       const event = receipt?.logs.find((log: any) => {
         try {
@@ -240,21 +251,21 @@ describe("Prediction Market Platform", function () {
       const parsedEvent = binaryFactory.interface.parseLog(event!);
       const marketAddress = parsedEvent?.args?.market;
       const market = await ethers.getContractAt("MarketBinary", marketAddress);
-      
+
       // Set market address in oracle
       await oracle.connect(council).setMarketAddress(1, marketAddress);
-      
+
       // Approve collateral
       await collateral
         .connect(trader1)
         .approve(marketAddress, ethers.parseEther("1000"));
-      
+
       // Try to buy before start time - should fail
       await expect(
         market.connect(trader1).buy(true, ethers.parseEther("100"))
       ).to.be.revertedWithCustomError(market, "NotStarted");
     });
-    
+
     it("Should allow trading during active period", async function () {
       const {
         binaryFactory,
@@ -265,13 +276,13 @@ describe("Prediction Market Platform", function () {
         creator,
         trader1,
       } = await loadFixture(deployFixture);
-      
+
       const startTime = (await time.latest()) + 300; // Start in 5 minutes
       const endTime = startTime + 24 * 3600; // End in 1 day
       const resolutionDeadline = endTime + 12 * 3600;
-      
+
       const marketKey = ethers.keccak256(ethers.toUtf8Bytes("active-market"));
-      
+
       const tx = await binaryFactory.createBinary(
         await collateral.getAddress(),
         "Active market",
@@ -287,7 +298,7 @@ describe("Prediction Market Platform", function () {
         resolutionDeadline,
         { value: ethers.parseEther("1000") } // Send DAG as value
       );
-      
+
       const receipt = await tx.wait();
       const event = receipt?.logs.find((log: any) => {
         try {
@@ -300,18 +311,18 @@ describe("Prediction Market Platform", function () {
       const parsedEvent = binaryFactory.interface.parseLog(event!);
       const marketAddress = parsedEvent?.args?.market;
       const market = await ethers.getContractAt("MarketBinary", marketAddress);
-      
+
       // Set creator for fee routing
       await feeRouter.setCreator(marketAddress, creator.address);
-      
+
       // Approve collateral
       await collateral
         .connect(trader1)
         .approve(marketAddress, ethers.parseEther("1000"));
-      
+
       // Fast forward to start time
       await time.increaseTo(startTime + 1);
-      
+
       // Should be able to buy now
       const shares = ethers.parseEther("100");
       const yesTokenAddress = await market.yesToken();
@@ -320,7 +331,7 @@ describe("Prediction Market Platform", function () {
         market,
         "Bought"
       );
-      
+
       // Check YES token balance
       const yesToken = await ethers.getContractAt(
         "OutcomeTokenERC20",
@@ -328,7 +339,7 @@ describe("Prediction Market Platform", function () {
       );
       expect(await yesToken.balanceOf(trader1.address)).to.equal(shares);
     });
-    
+
     it("Should prevent trading after end time", async function () {
       const {
         binaryFactory,
@@ -339,13 +350,13 @@ describe("Prediction Market Platform", function () {
         creator,
         trader1,
       } = await loadFixture(deployFixture);
-      
+
       const startTime = (await time.latest()) + 300;
       const endTime = startTime + 3600; // Short 1 hour window
       const resolutionDeadline = endTime + 12 * 3600;
-      
+
       const marketKey = ethers.keccak256(ethers.toUtf8Bytes("expired-market"));
-      
+
       const tx = await binaryFactory.createBinary(
         await collateral.getAddress(),
         "Expired market",
@@ -361,7 +372,7 @@ describe("Prediction Market Platform", function () {
         resolutionDeadline,
         { value: ethers.parseEther("1000") } // Send DAG as value
       );
-      
+
       const receipt = await tx.wait();
       const event = receipt?.logs.find((log: any) => {
         try {
@@ -374,14 +385,14 @@ describe("Prediction Market Platform", function () {
       const parsedEvent = binaryFactory.interface.parseLog(event!);
       const marketAddress = parsedEvent?.args?.market;
       const market = await ethers.getContractAt("MarketBinary", marketAddress);
-      
+
       await collateral
         .connect(trader1)
         .approve(marketAddress, ethers.parseEther("1000"));
-      
+
       // Fast forward past end time
       await time.increaseTo(endTime + 1);
-      
+
       // Try to buy after end time - should fail
       await expect(
         market.connect(trader1).buy(true, ethers.parseEther("100"))
@@ -401,13 +412,13 @@ describe("Prediction Market Platform", function () {
         trader1,
         trader2,
       } = await loadFixture(deployFixture);
-      
+
       const startTime = (await time.latest()) + 300;
       const endTime = startTime + 24 * 3600;
       const resolutionDeadline = endTime + 12 * 3600;
-      
+
       const marketKey = ethers.keccak256(ethers.toUtf8Bytes("pricing-market"));
-      
+
       const tx = await binaryFactory.createBinary(
         await collateral.getAddress(),
         "Pricing test market",
@@ -423,7 +434,7 @@ describe("Prediction Market Platform", function () {
         resolutionDeadline,
         { value: ethers.parseEther("100") } // Send DAG as value
       );
-      
+
       const receipt = await tx.wait();
       const event = receipt?.logs.find((log: any) => {
         try {
@@ -436,7 +447,7 @@ describe("Prediction Market Platform", function () {
       const parsedEvent = binaryFactory.interface.parseLog(event!);
       const marketAddress = parsedEvent?.args?.market;
       const market = await ethers.getContractAt("MarketBinary", marketAddress);
-      
+
       await feeRouter.setCreator(marketAddress, creator.address);
       await collateral
         .connect(trader1)
@@ -444,23 +455,23 @@ describe("Prediction Market Platform", function () {
       await collateral
         .connect(trader2)
         .approve(marketAddress, ethers.parseEther("1000"));
-      
+
       await time.increaseTo(startTime + 1);
-      
+
       // Initial prices should be roughly 50/50
       const initialYesPrice = await market.price(true);
       const initialNoPrice = await market.price(false);
-      
+
       console.log("Initial YES price:", ethers.formatEther(initialYesPrice));
       console.log("Initial NO price:", ethers.formatEther(initialNoPrice));
-      
+
       // Buy YES tokens
       await market.connect(trader1).buy(true, ethers.parseEther("50"));
-      
+
       // YES price should increase, NO price should decrease
       const afterYesPrice = await market.price(true);
       const afterNoPrice = await market.price(false);
-      
+
       console.log(
         "After YES purchase - YES price:",
         ethers.formatEther(afterYesPrice)
@@ -474,13 +485,13 @@ describe("Prediction Market Platform", function () {
       // and increases NO supply, decreasing NO price (like betting odds)
       expect(afterYesPrice).to.be.gt(initialYesPrice);
       expect(afterNoPrice).to.be.lt(initialNoPrice);
-      
+
       // Buy NO tokens to balance
       await market.connect(trader2).buy(false, ethers.parseEther("50"));
-      
+
       const balancedYesPrice = await market.price(true);
       const balancedNoPrice = await market.price(false);
-      
+
       console.log(
         "After balancing - YES price:",
         ethers.formatEther(balancedYesPrice)
@@ -504,15 +515,15 @@ describe("Prediction Market Platform", function () {
         reporter,
         council,
       } = await loadFixture(deployFixture);
-      
+
       const startTime = (await time.latest()) + 300;
       const endTime = startTime + 3600;
       const resolutionDeadline = endTime + 3600; // 1 hour after end
-      
+
       const marketKey = ethers.keccak256(
         ethers.toUtf8Bytes("resolution-market")
       );
-      
+
       const tx = await binaryFactory.createBinary(
         await collateral.getAddress(),
         "Resolution test",
@@ -528,7 +539,7 @@ describe("Prediction Market Platform", function () {
         resolutionDeadline,
         { value: ethers.parseEther("1000") } // Send DAG as value
       );
-      
+
       const receipt = await tx.wait();
       const event = receipt?.logs.find((log: any) => {
         try {
@@ -541,7 +552,7 @@ describe("Prediction Market Platform", function () {
       const parsedEvent = binaryFactory.interface.parseLog(event!);
       const marketAddress = parsedEvent?.args?.market;
       const market = await ethers.getContractAt("MarketBinary", marketAddress);
-      
+
       await oracle.connect(council).setMarketAddress(1, marketAddress);
       await collateral
         .connect(reporter)
@@ -562,7 +573,7 @@ describe("Prediction Market Platform", function () {
         "ResolutionTooEarly"
       );
     });
-    
+
     it("Should complete full resolution cycle", async function () {
       const {
         binaryFactory,
@@ -575,15 +586,15 @@ describe("Prediction Market Platform", function () {
         reporter,
         council,
       } = await loadFixture(deployFixture);
-      
+
       const startTime = (await time.latest()) + 300;
       const endTime = startTime + 1800; // 30 min trading
       const resolutionDeadline = endTime + 600; // 10 min after end
-      
+
       const marketKey = ethers.keccak256(
         ethers.toUtf8Bytes("full-cycle-market")
       );
-      
+
       const tx = await binaryFactory.createBinary(
         await collateral.getAddress(),
         "Full cycle test",
@@ -599,7 +610,7 @@ describe("Prediction Market Platform", function () {
         resolutionDeadline,
         { value: ethers.parseEther("1000") } // Send DAG as value
       );
-      
+
       const receipt = await tx.wait();
       const event = receipt?.logs.find((log: any) => {
         try {
@@ -612,7 +623,7 @@ describe("Prediction Market Platform", function () {
       const parsedEvent = binaryFactory.interface.parseLog(event!);
       const marketAddress = parsedEvent?.args?.market;
       const market = await ethers.getContractAt("MarketBinary", marketAddress);
-      
+
       await oracle.connect(council).setMarketAddress(1, marketAddress);
       await feeRouter.setCreator(marketAddress, creator.address);
       await collateral
@@ -621,37 +632,37 @@ describe("Prediction Market Platform", function () {
       await collateral
         .connect(reporter)
         .approve(await oracle.getAddress(), ethers.parseEther("1000"));
-      
+
       // Fast forward to trading period and buy some YES tokens
       await time.increaseTo(startTime + 1);
       const shares = ethers.parseEther("100");
       await market.connect(trader1).buy(true, shares);
-      
+
       // Fast forward to resolution period
       await time.increaseTo(resolutionDeadline + 1);
-      
+
       // Close market
       await market.close();
       expect(await market.state()).to.equal(1); // Closed
-      
+
       // Propose result
       await oracle.connect(reporter).proposeResult(
         1,
         "0x01", // YES wins
         "ipfs://evidence"
       );
-      
+
       // Wait for liveness period
       await time.increase(3601); // Just over 1 hour
-      
+
       // Finalize oracle result
       await oracle.finalize(1);
-      
+
       // Finalize market
       await market.finalize(1);
       expect(await market.state()).to.equal(2); // Resolved
       expect(await market.finalOutcome()).to.equal(1);
-      
+
       // Redeem winning tokens
       const yesTokenAddress = await market.yesToken();
       const yesToken = await ethers.getContractAt(
@@ -659,9 +670,9 @@ describe("Prediction Market Platform", function () {
         yesTokenAddress
       );
       const balanceBefore = await collateral.balanceOf(trader1.address);
-      
+
       await market.connect(trader1).redeem();
-      
+
       const balanceAfter = await collateral.balanceOf(trader1.address);
       expect(balanceAfter - balanceBefore).to.equal(shares);
       expect(await yesToken.balanceOf(trader1.address)).to.equal(0); // Tokens burned
@@ -679,13 +690,13 @@ describe("Prediction Market Platform", function () {
         creator,
         trader1,
       } = await loadFixture(deployFixture);
-      
+
       const startTime = (await time.latest()) + 300;
       const endTime = startTime + 3600;
       const resolutionDeadline = endTime + 3600;
-      
+
       const marketKey = ethers.keccak256(ethers.toUtf8Bytes("fee-market"));
-      
+
       const tx = await binaryFactory.createBinary(
         await collateral.getAddress(),
         "Fee test",
@@ -701,7 +712,7 @@ describe("Prediction Market Platform", function () {
         resolutionDeadline,
         { value: ethers.parseEther("1000") } // Send DAG as value
       );
-      
+
       const receipt = await tx.wait();
       const event = receipt?.logs.find((log: any) => {
         try {
@@ -714,17 +725,17 @@ describe("Prediction Market Platform", function () {
       const parsedEvent = binaryFactory.interface.parseLog(event!);
       const marketAddress = parsedEvent?.args?.market;
       const market = await ethers.getContractAt("MarketBinary", marketAddress);
-      
+
       await feeRouter.setCreator(marketAddress, creator.address);
       await collateral
         .connect(trader1)
         .approve(marketAddress, ethers.parseEther("1000"));
-      
+
       await time.increaseTo(startTime + 1);
-      
+
       // Make a purchase that should generate fees
       await market.connect(trader1).buy(true, ethers.parseEther("100"));
-      
+
       // Check fee accrual (30% protocol, 30% creator, 40% LP)
       const creatorAccrued = await feeRouter.creatorAccrued(creator.address);
       const protocolAccrued = await feeRouter.protocolAccrued(
@@ -861,14 +872,14 @@ describe("Prediction Market Platform", function () {
         creator,
         trader1,
       } = await loadFixture(deployFixture);
-      
+
       const startTime = (await time.latest()) + 300;
       const endTime = startTime + 3600;
       const resolutionDeadline = endTime + 3600;
-      
+
       const outcomes = ["Team A wins", "Team B wins", "Draw"];
       const marketKey = ethers.keccak256(ethers.toUtf8Bytes("multi-market"));
-      
+
       const tx = await multiFactory.createMulti(
         await collateral.getAddress(),
         "Who will win the match?",
@@ -885,7 +896,7 @@ describe("Prediction Market Platform", function () {
         resolutionDeadline,
         { value: ethers.parseEther("1000") } // Send DAG as value
       );
-      
+
       const receipt = await tx.wait();
       const event = receipt?.logs.find((log: any) => {
         try {
@@ -898,30 +909,30 @@ describe("Prediction Market Platform", function () {
       const parsedEvent = multiFactory.interface.parseLog(event!);
       const marketAddress = parsedEvent?.args?.market;
       const market = await ethers.getContractAt("MarketMulti", marketAddress);
-      
+
       await feeRouter.setCreator(marketAddress, creator.address);
       await collateral
         .connect(trader1)
         .approve(marketAddress, ethers.parseEther("1000"));
-      
+
       await time.increaseTo(startTime + 1);
-      
+
       // Buy tokens for outcome 0 (Team A wins)
       const shares = ethers.parseEther("100");
       await expect(market.connect(trader1).buy(0, shares)).to.emit(
         market,
         "Bought"
       );
-      
+
       // Check prices - outcome 0 should be more expensive now
       const price0 = await market.price(0);
       const price1 = await market.price(1);
       const price2 = await market.price(2);
-      
+
       console.log("Team A price:", ethers.formatEther(price0));
       console.log("Team B price:", ethers.formatEther(price1));
       console.log("Draw price:", ethers.formatEther(price2));
-      
+
       expect(price0).to.be.gt(price1);
       expect(price0).to.be.gt(price2);
     });
@@ -939,13 +950,13 @@ describe("Prediction Market Platform", function () {
         council,
         curation,
       } = await loadFixture(deployFixture);
-      
+
       const startTime = (await time.latest()) + 300;
       const endTime = startTime + 3600;
       const resolutionDeadline = endTime + 3600;
-      
+
       const marketKey = ethers.keccak256(ethers.toUtf8Bytes("curation-market"));
-      
+
       const tx = await binaryFactory.createBinary(
         await collateral.getAddress(),
         "Curation test",
@@ -961,7 +972,7 @@ describe("Prediction Market Platform", function () {
         resolutionDeadline,
         { value: ethers.parseEther("1000") } // Send DAG as value
       );
-      
+
       const receipt = await tx.wait();
       const event = receipt?.logs.find((log: any) => {
         try {
@@ -973,22 +984,22 @@ describe("Prediction Market Platform", function () {
       });
       const parsedEvent = binaryFactory.interface.parseLog(event!);
       const marketId = parsedEvent?.args?.marketId;
-      
+
       // Market should start as Pending (0)
       expect(await curation.statusOf(marketId)).to.equal(0);
-      
+
       // Approve market
       await expect(curation.connect(council).approveMarket(marketId))
         .to.emit(curation, "StatusChanged")
         .withArgs(marketId, 1); // Approved
-      
+
       expect(await curation.statusOf(marketId)).to.equal(1);
-      
+
       // Flag market
       await expect(curation.connect(council).flagMarket(marketId))
         .to.emit(curation, "StatusChanged")
         .withArgs(marketId, 2); // Flagged
-      
+
       expect(await curation.statusOf(marketId)).to.equal(2);
     });
   });
@@ -1009,7 +1020,7 @@ describe("Prediction Market Platform", function () {
         council,
       } = await loadFixture(deployFixture);
 
-      const startTime = Math.floor(Date.now() / 1000) + 60;
+      const startTime = (await time.latest()) + 60;
       const endTime = startTime + 3600;
       const resolutionDeadline = endTime + 1800;
 
@@ -1076,7 +1087,7 @@ describe("Prediction Market Platform", function () {
       console.log("Market pool balance:", ethers.formatEther(marketBalance));
 
       // Close and resolve market
-      await time.increaseTo(endTime + 1);
+      await time.increase(3600); // Advance 1 hour
       await market.close();
       await market.finalize(1); // YES wins
 
@@ -1132,7 +1143,7 @@ describe("Prediction Market Platform", function () {
         council,
       } = await loadFixture(deployFixture);
 
-      const startTime = Math.floor(Date.now() / 1000) + 60;
+      const startTime = (await time.latest()) + 60;
       const endTime = startTime + 3600;
       const resolutionDeadline = endTime + 1800;
 
@@ -1216,7 +1227,7 @@ describe("Prediction Market Platform", function () {
         council,
       } = await loadFixture(deployFixture);
 
-      const startTime = Math.floor(Date.now() / 1000) + 60;
+      const startTime = (await time.latest()) + 60;
       const endTime = startTime + 3600;
       const resolutionDeadline = endTime + 1800;
 
@@ -1277,7 +1288,7 @@ describe("Prediction Market Platform", function () {
         council,
       } = await loadFixture(deployFixture);
 
-      const startTime = Math.floor(Date.now() / 1000) + 60;
+      const startTime = (await time.latest()) + 60;
       const endTime = startTime + 3600;
       const resolutionDeadline = endTime + 1800;
 
@@ -1340,7 +1351,7 @@ describe("Prediction Market Platform", function () {
         council,
       } = await loadFixture(deployFixture);
 
-      const startTime = Math.floor(Date.now() / 1000) + 60;
+      const startTime = (await time.latest()) + 60;
       const endTime = startTime + 3600;
       const resolutionDeadline = endTime + 1800;
 
@@ -1377,7 +1388,7 @@ describe("Prediction Market Platform", function () {
       const marketAddress = parsedEvent?.args?.market;
       const market = await ethers.getContractAt("MarketBinary", marketAddress);
 
-      await time.increaseTo(endTime + 1);
+      await time.increaseTo(endTime + 1); // Advance past end time
       await market.close();
 
       // Try to finalize as non-oracle - should succeed (no authorization check)
@@ -1401,7 +1412,7 @@ describe("Prediction Market Platform", function () {
         council,
       } = await loadFixture(deployFixture);
 
-      const startTime = Math.floor(Date.now() / 1000) + 60;
+      const startTime = (await time.latest()) + 60;
       const endTime = startTime + 3600;
       const resolutionDeadline = endTime + 1800;
 
@@ -1441,7 +1452,7 @@ describe("Prediction Market Platform", function () {
       await collateral
         .connect(trader1)
         .approve(marketAddress, ethers.parseEther("1000"));
-      await time.increaseTo(endTime + 1);
+      await time.increaseTo(endTime + 1); // Advance past end time
       await market.close();
 
       // Try to trade after market is closed - should fail

@@ -300,9 +300,8 @@ contract MarketBinary {
         // Remove liquidity from LP pool
         wDAGAmount = lpToken.removeLiquidity(msg.sender, lpTokens);
 
-        // Convert wDAG back to DAG and send to user
-        wDAG(payable(address(collateral))).withdraw(wDAGAmount);
-        payable(msg.sender).transfer(wDAGAmount);
+        // Transfer wDAG tokens directly to user (they can withdraw DAG themselves)
+        collateral.transfer(msg.sender, wDAGAmount);
 
         return wDAGAmount;
     }

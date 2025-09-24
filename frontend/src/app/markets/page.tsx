@@ -1,31 +1,65 @@
-import { MarketSearch } from "@/components/MarketSearch"
+"use client"
+
+import { useState } from "react"
 import { MarketFilters } from "@/components/MarketFilters"
+import { MarketSearch } from "@/components/MarketSearch"
 import { MarketList } from "@/components/MarketList"
+import { MarketCategory, MarketStatus } from "@/types/market"
 
 export default function MarketsPage() {
+	const [searchTerm, setSearchTerm] = useState("")
+	const [selectedCategory, setSelectedCategory] = useState<MarketCategory | "all">("all")
+	const [selectedStatus, setSelectedStatus] = useState<MarketStatus | "all">("all")
+	const [sortBy, setSortBy] = useState<"volume" | "liquidity" | "created" | "ending">("created")
+	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+
+	const resetFilters = () => {
+		setSelectedCategory("all")
+		setSelectedStatus("all")
+	}
+
+	const resetSearch = () => {
+		setSearchTerm("")
+		setSortBy("created")
+		setSortOrder("desc")
+	}
+
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
-			<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-				<div className="mb-8">
-					<h1 className="text-3xl font-bold mb-2">Prediction Markets</h1>
-					<p className="text-muted-foreground">
-						Discover and trade on thousands of prediction markets across all categories
-					</p>
+		<div className="space-y-8">
+			{/* Search + sort */}
+			<MarketSearch
+				searchQuery={searchTerm}
+				onSearchChange={setSearchTerm}
+				sortBy={sortBy}
+				onSortChange={setSortBy}
+				sortOrder={sortOrder}
+				onSortOrderChange={setSortOrder}
+				onResetSearch={resetSearch}
+			/>
+
+			<div className="flex flex-col md:flex-row gap-6">
+				{/* Filters sidebar */}
+				<div className="w-full md:w-64">
+					<MarketFilters
+						selectedCategory={selectedCategory}
+						onCategoryChange={setSelectedCategory}
+						selectedStatus={selectedStatus}
+						onStatusChange={setSelectedStatus}
+						onResetFilters={resetFilters}
+					/>
 				</div>
 
-				<div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-					{/* Filters Sidebar */}
-					<div className="lg:col-span-1">
-						<MarketFilters />
-					</div>
-
-					{/* Main Content */}
-					<div className="lg:col-span-3 space-y-6">
-						<MarketSearch />
-						<MarketList />
-					</div>
+				{/* Market list */}
+				<div className="flex-1">
+					<MarketList
+						searchQuery={searchTerm}
+						category={selectedCategory}
+						status={selectedStatus}
+						sortBy={sortBy}
+						sortOrder={sortOrder}
+					/>
 				</div>
-			</main>
+			</div>
 		</div>
 	)
 }

@@ -1,9 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import { Search, SlidersHorizontal, TrendingUp, Clock, DollarSign } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import {
 	Select,
 	SelectContent,
@@ -11,91 +8,70 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { ArrowUpDown, X } from "lucide-react"
 
-/**
- * Advanced market search component with sorting and quick filters
- * Features real-time search, sorting options, and category filters
- */
-export function MarketSearch() {
-	const [searchQuery, setSearchQuery] = useState("")
-	const [sortBy, setSortBy] = useState("volume")
-	const [showFilters, setShowFilters] = useState(false)
+interface MarketSearchProps {
+	searchQuery: string
+	onSearchChange: (q: string) => void
+	sortBy: "volume" | "liquidity" | "created" | "ending"
+	onSortChange: (s: "volume" | "liquidity" | "created" | "ending") => void
+	sortOrder: "asc" | "desc"
+	onSortOrderChange: (o: "asc" | "desc") => void
+	onResetSearch: () => void
+}
 
-	const sortOptions = [
-		{ value: "volume", label: "Volume", icon: DollarSign },
-		{ value: "liquidity", label: "Liquidity", icon: TrendingUp },
-		{ value: "newest", label: "Newest", icon: Clock },
-		{ value: "ending", label: "Ending Soon", icon: Clock },
-	]
-
-	const quickFilters = [
-		{ label: "Hot", count: 24 },
-		{ label: "New", count: 12 },
-		{ label: "Ending Soon", count: 8 },
-		{ label: "High Volume", count: 15 },
-	]
-
+export function MarketSearch({
+	searchQuery,
+	onSearchChange,
+	sortBy,
+	onSortChange,
+	sortOrder,
+	onSortOrderChange,
+	onResetSearch,
+}: MarketSearchProps) {
 	return (
-		<div className="backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-white/20 dark:border-white/10 rounded-xl shadow-lg p-6 space-y-4">
-			{/* Search Bar */}
-			<div className="flex flex-col sm:flex-row gap-4">
-				<div className="flex-1 relative">
-					<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-					<Input
-						placeholder="Search markets by title, category, or creator..."
-						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
-						className="pl-10 backdrop-blur-sm bg-input/50 border-border/20"
-					/>
-				</div>
-
-				<div className="flex gap-2">
-					<Select value={sortBy} onValueChange={setSortBy}>
-						<SelectTrigger className="w-40 backdrop-blur-sm bg-white/70 dark:bg-gray-900/70 border border-white/20 dark:border-white/10 rounded-xl shadow-lg">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{sortOptions.map((option) => {
-								const Icon = option.icon
-								return (
-									<SelectItem key={option.value} value={option.value}>
-										<div className="flex items-center space-x-2">
-											<Icon className="w-4 h-4" />
-											<span>{option.label}</span>
-										</div>
-									</SelectItem>
-								)
-							})}
-						</SelectContent>
-					</Select>
-
-					<Button
-						variant="outline"
-						onClick={() => setShowFilters(!showFilters)}
-						className="backdrop-blur-sm bg-white/70 dark:bg-gray-900/70 border border-white/20 dark:border-white/10 rounded-xl shadow-lg">
-						<SlidersHorizontal className="w-4 h-4 mr-2" />
-						Filters
-					</Button>
-				</div>
+		<div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+			{/* Search bar with clear button inside */}
+			<div className="relative w-full md:w-1/2">
+				<Input
+					placeholder="Search markets..."
+					value={searchQuery}
+					onChange={(e) => onSearchChange(e.target.value)}
+					className="pr-10" // add right padding for the clear button
+				/>
+				{searchQuery && (
+					<button
+						type="button"
+						onClick={onResetSearch}
+						className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+						title="Clear search">
+						<X className="h-4 w-4" />
+					</button>
+				)}
 			</div>
 
-			{/* Quick Filters */}
-			<div className="flex flex-wrap gap-2">
-				{quickFilters.map((filter) => (
-					<Badge
-						key={filter.label}
-						variant="outline"
-						className="cursor-pointer hover:bg-primary/10 transition-colors">
-						{filter.label} ({filter.count})
-					</Badge>
-				))}
-			</div>
+			{/* Sort controls */}
+			<div className="flex items-center gap-2">
+				<Select value={sortBy} onValueChange={(val) => onSortChange(val as typeof sortBy)}>
+					<SelectTrigger className="w-[160px]">
+						<SelectValue placeholder="Sort by" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="volume">Volume</SelectItem>
+						<SelectItem value="liquidity">Liquidity</SelectItem>
+						<SelectItem value="created">Created</SelectItem>
+						<SelectItem value="ending">Ending Soon</SelectItem>
+					</SelectContent>
+				</Select>
 
-			{/* Results Summary */}
-			<div className="flex items-center justify-between text-sm text-muted-foreground">
-				<span>Showing 1,247 markets</span>
-				<span>Updated 2 minutes ago</span>
+				<Button
+					variant="outline"
+					size="icon"
+					onClick={() => onSortOrderChange(sortOrder === "asc" ? "desc" : "asc")}
+					title={`Sort ${sortOrder === "asc" ? "descending" : "ascending"}`}>
+					<ArrowUpDown className="h-4 w-4" />
+				</Button>
 			</div>
 		</div>
 	)

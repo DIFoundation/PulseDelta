@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import {
 	Search,
@@ -25,44 +27,38 @@ import {
 } from "@/components/ui/select"
 import { useMarketList } from "@/hooks/useMarket"
 import { toast } from "@/hooks/use-toast"
+import { MarketFilter } from "@/types/market" // adjust path if needed
+import { isMarketCategory } from "@/utils/guard"
 
-/**
- * Main landing page with hero section and market feed
- * Includes search, filtering, and quick trading functionality
- */
 export default function Index() {
+	const router = useRouter()
 	const [searchTerm, setSearchTerm] = useState("")
 	const [selectedCategory, setSelectedCategory] = useState<string>("all")
-	const [sortBy, setSortBy] = useState<string>("volume")
+	const [sortBy, setSortBy] = useState<MarketFilter["sortBy"]>("created")
+	const [sortOrder, setSortOrder] = useState<MarketFilter["sortOrder"]>("desc")
 
-	const { data: markets, isLoading } = useMarketList(0, 20, {
-		category: selectedCategory === "all" ? undefined : selectedCategory,
+	// build filter explicitly as MarketFilter
+	const filter: MarketFilter = {
+		category:
+			selectedCategory === "all"
+				? undefined
+				: isMarketCategory(selectedCategory)
+				? selectedCategory
+				: undefined,
 		search: searchTerm,
-	})
+		sortBy,
+		sortOrder,
+	}
+
+	// fetch more than 3 but slice for landing
+	const { data: markets, isLoading } = useMarketList(0, 20, filter)
 
 	const handleQuickTrade = (marketId: string, outcomeIndex: number) => {
 		toast({
 			title: "Quick Trade",
 			description: `Opening trade modal for market ${marketId}, outcome ${outcomeIndex}`,
 		})
-		// TODO: Implement quick trade modal
 	}
-
-	const categories = [
-		{ value: "all", label: "All Markets" },
-		{ value: "crypto", label: "Crypto" },
-		{ value: "sports", label: "Sports" },
-		{ value: "politics", label: "Politics" },
-		{ value: "entertainment", label: "Entertainment" },
-		{ value: "technology", label: "Technology" },
-	]
-
-	const sortOptions = [
-		{ value: "volume", label: "Volume" },
-		{ value: "liquidity", label: "Liquidity" },
-		{ value: "created", label: "Recently Created" },
-		{ value: "ending", label: "Ending Soon" },
-	]
 
 	const heroVariants = {
 		hidden: { opacity: 0, y: 30 },
@@ -118,11 +114,18 @@ export default function Index() {
 				<motion.div
 					className="flex flex-col sm:flex-row gap-4 justify-center items-center"
 					variants={itemVariants}>
-					<Button size="lg" className="primary-gradient text-primary-foreground px-8">
+					<Button
+						size="lg"
+						className="primary-gradient text-primary-foreground px-8"
+						onClick={() => router.push("/markets")}>
 						<Target className="mr-2 h-5 w-5" />
 						Explore Markets
 					</Button>
-					<Button size="lg" variant="outline" className="glass-card">
+					<Button
+						size="lg"
+						variant="outline"
+						className="glass-card"
+						onClick={() => router.push("/create")}>
 						<TrendingUp className="mr-2 h-5 w-5" />
 						Create Market
 						<ArrowRight className="ml-2 h-4 w-4" />
@@ -159,7 +162,7 @@ export default function Index() {
 				</motion.div>
 			</motion.section>
 
-			{/* Market Feed */}
+			{/* Market Feed (latest 3 only) */}
 			<section>
 				<motion.div
 					className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8"
@@ -167,56 +170,16 @@ export default function Index() {
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ delay: 0.3 }}>
 					<div>
-						<h2 className="text-3xl font-bold mb-2">Active Markets</h2>
+						<h2 className="text-3xl font-bold mb-2">Latest Markets</h2>
 						<p className="text-muted-foreground">
-							Trade on the most popular prediction markets
+							Here are the 3 most recent active markets
 						</p>
-					</div>
-
-					<div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-						<div className="relative">
-							<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-							<Input
-								placeholder="Search markets..."
-								value={searchTerm}
-								onChange={(e) => setSearchTerm(e.target.value)}
-								className="pl-10 w-full sm:w-64 glass-card"
-							/>
-						</div>
-
-						<Select value={selectedCategory} onValueChange={setSelectedCategory}>
-							<SelectTrigger className="w-full sm:w-40 glass-card">
-								<Filter className="w-4 h-4 mr-2" />
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent className="glass-card border-glass-border">
-								{categories.map((category) => (
-									<SelectItem key={category.value} value={category.value}>
-										{category.label}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-
-						<Select value={sortBy} onValueChange={setSortBy}>
-							<SelectTrigger className="w-full sm:w-32 glass-card">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent className="glass-card border-glass-border">
-								{sortOptions.map((option) => (
-									<SelectItem key={option.value} value={option.value}>
-										{option.label}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
 					</div>
 				</motion.div>
 
-				{/* Markets Grid */}
 				{isLoading ? (
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-						{Array.from({ length: 6 }).map((_, i) => (
+						{Array.from({ length: 3 }).map((_, i) => (
 							<div key={i} className="glass-card p-6 animate-pulse">
 								<div className="h-4 bg-muted rounded mb-4"></div>
 								<div className="h-8 bg-muted rounded mb-4"></div>
@@ -233,7 +196,7 @@ export default function Index() {
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						transition={{ delay: 0.4 }}>
-						{markets?.map((market, index) => (
+						{markets?.slice(0, 3).map((market, index) => (
 							<motion.div
 								key={market.id}
 								initial={{ opacity: 0, y: 20 }}
@@ -249,14 +212,18 @@ export default function Index() {
 					</motion.div>
 				)}
 
-				{/* Load More */}
+				{/* View all button */}
 				<motion.div
 					className="text-center mt-12"
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					transition={{ delay: 0.6 }}>
-					<Button variant="outline" size="lg" className="glass-card hover:bg-primary/5">
-						Load More Markets
+					<Button
+						variant="outline"
+						size="lg"
+						className="glass-card hover:bg-primary/5"
+						onClick={() => router.push("/markets")}>
+						View All Markets
 					</Button>
 				</motion.div>
 			</section>

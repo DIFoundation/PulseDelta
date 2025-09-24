@@ -1,50 +1,4 @@
 {
-<<<<<<< HEAD
-  "name": "frontend",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "@reown/appkit": "^1.2.1",
-    "@reown/appkit-adapter-wagmi": "^1.2.1",
-    "@tanstack/react-query": "^5.59.19",
-    "@web3modal/wagmi": "^5.1.3",
-    "encoding": "^0.1.13",
-    "next": "14.2.6",
-    "pino-pretty": "^13.0.0",
-    "react": "^18",
-    "react-dom": "^18",
-    "usehooks-ts": "^3.1.0",
-    "viem": "^2.21.40",
-    "wagmi": "^2.12.25",
-    "framer-motion": "^11.0.0",
-    "lucide-react": "^0.400.0",
-    "recharts": "^2.12.0",
-    "clsx": "^2.1.0",
-    "tailwind-merge": "^2.2.0",
-    "react-hook-form": "^7.49.0",
-    "@hookform/resolvers": "^3.3.0",
-    "zod": "^3.22.0",
-    "date-fns": "^3.0.0",
-    "react-hot-toast": "^2.4.0",
-    "swiper": "^11.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "eslint": "^8",
-    "eslint-config-next": "15.0.2",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
-  }
-=======
 	"name": "frontend",
 	"version": "0.1.0",
 	"private": true,
@@ -126,5 +80,4 @@
 		"tailwindcss": "^3.4.17",
 		"typescript": "^5"
 	}
->>>>>>> ef695cb3ac963b105f5113dfe666b9e0c8955471
 }

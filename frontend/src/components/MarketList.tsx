@@ -6,8 +6,8 @@ import { motion } from "framer-motion"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MarketCard } from "@/components/MarketCard"
-import { mockMarkets } from "@/mock/mockMarkets"
 import { MarketCategory, MarketStatus, Market } from "@/types/market"
+import { useMarketList } from "@/hooks/useMarket"
 
 interface MarketListProps {
 	searchQuery: string
@@ -21,9 +21,16 @@ export function MarketList({ searchQuery, category, status, sortBy, sortOrder }:
 	const [currentPage, setCurrentPage] = useState(1)
 	const marketsPerPage = 9
 
+	// Fetch real market data
+	const { data: markets = [], isLoading } = useMarketList(0, 100, {
+		category: category === "all" ? undefined : category,
+		status: status === "all" ? undefined : status,
+		search: searchQuery || undefined,
+	})
+
 	// 🔎 Filtering + sorting logic
 	const filteredMarkets = useMemo(() => {
-		let result = [...mockMarkets]
+		let result = [...markets]
 
 		// Search
 		if (searchQuery.trim()) {
@@ -79,7 +86,7 @@ export function MarketList({ searchQuery, category, status, sortBy, sortOrder }:
 		})
 
 		return result
-	}, [searchQuery, category, status, sortBy, sortOrder])
+	}, [markets, searchQuery, category, status, sortBy, sortOrder])
 
 	// Pagination
 	const totalPages = Math.ceil(filteredMarkets.length / marketsPerPage)
@@ -90,6 +97,30 @@ export function MarketList({ searchQuery, category, status, sortBy, sortOrder }:
 	const goToPage = (page: number) => {
 		setCurrentPage(page)
 		window.scrollTo({ top: 0, behavior: "smooth" })
+	}
+
+	if (isLoading) {
+		return (
+			<div className="space-y-6">
+				<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+					{Array.from({ length: 6 }).map((_, index) => (
+						<div key={index} className="glass-card p-6 animate-pulse">
+							<div className="h-4 bg-muted rounded mb-2"></div>
+							<div className="h-6 bg-muted rounded mb-4"></div>
+							<div className="space-y-2 mb-4">
+								<div className="h-8 bg-muted rounded"></div>
+								<div className="h-8 bg-muted rounded"></div>
+							</div>
+							<div className="grid grid-cols-3 gap-4">
+								<div className="h-4 bg-muted rounded"></div>
+								<div className="h-4 bg-muted rounded"></div>
+								<div className="h-4 bg-muted rounded"></div>
+							</div>
+						</div>
+					))}
+				</div>
+			</div>
+		)
 	}
 
 	return (

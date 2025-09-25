@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, Clock, Droplets, Users, BarChart3 } from "luc
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { TagsList } from "@/components/ui/tags"
 import type { Market } from "@/types/market"
 
 interface MarketCardProps {
@@ -83,11 +84,45 @@ export function MarketCard({ market, showQuickTrade = false, onQuickTrade }: Mar
 							<Badge className={getCategoryColor(market.category)}>
 								{market.category}
 							</Badge>
+							<Badge 
+								variant="outline"
+								className={
+									market.curationStatus === "Pending"
+										? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+										: market.curationStatus === "Approved"
+										? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+										: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+								}
+							>
+								{market.curationStatus}
+							</Badge>
+							<Badge 
+								variant="outline"
+								className={
+									market.state === "Open"
+										? "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
+										: market.state === "Closed"
+										? "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400"
+										: "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400"
+								}
+							>
+								{market.state}
+							</Badge>
 							{market.resolved && <Badge variant="secondary">Resolved</Badge>}
 						</div>
 						<h3 className="text-lg font-semibold line-clamp-2 group-hover:text-primary transition-colors">
 							{market.title}
 						</h3>
+						{/* Tags */}
+						{market.tags && market.tags.length > 0 && (
+							<TagsList
+								tags={market.tags}
+								variant="secondary"
+								size="sm"
+								maxTags={3}
+								className="mt-2"
+							/>
+						)}
 					</div>
 					<div className="text-right ml-4">
 						<div className="text-2xl font-bold text-primary">

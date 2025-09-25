@@ -3,8 +3,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { useConnect, useAccount, useDisconnect } from "wagmi"
-import { Wallet, AlertCircle } from "lucide-react"
+import { useConnect, useAccount, useDisconnect, useSwitchChain } from "wagmi"
+import { Wallet, AlertCircle, ChevronDown, LogOut, RefreshCw, Copy, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
 	Dialog,
@@ -13,7 +13,16 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { toast } from "@/hooks/use-toast"
+import { useBDAGBalance } from "@/hooks/useBalance"
+import { blockdagPrimordial } from "@/chains"
 
 // 🔥 Fallback icons for popular wallets
 const walletIcons: Record<string, string> = {
@@ -29,9 +38,12 @@ interface WalletModalProps {
 
 export function WalletModal({ children }: WalletModalProps) {
 	const [open, setOpen] = useState(false)
+	const [copied, setCopied] = useState(false)
 	const { connect, connectors, error, isPending } = useConnect()
-	const { isConnected } = useAccount()
+	const { isConnected, address, chainId } = useAccount()
 	const { disconnect } = useDisconnect()
+	const { switchChain } = useSwitchChain()
+	const { balance, formatted, symbol, isLoading: balanceLoading } = useBDAGBalance()
 
 	const handleConnect = async (connector: any) => {
 		try {
@@ -50,6 +62,57 @@ export function WalletModal({ children }: WalletModalProps) {
 		}
 	}
 
+	const handleDisconnect = () => {
+		disconnect()
+		toast({
+			title: "Wallet Disconnected",
+			description: "Successfully disconnected from your wallet",
+		})
+	}
+
+	const handleSwitchChain = async () => {
+		try {
+			await switchChain({ chainId: blockdagPrimordial.id })
+			toast({
+				title: "Network Switched",
+				description: "Successfully switched to BlockDAG Primordial",
+			})
+		} catch (error) {
+			toast({
+				title: "Switch Failed",
+				description: "Failed to switch network",
+				variant: "destructive",
+			})
+		}
+	}
+
+	const copyAddress = async () => {
+		if (address) {
+			await navigator.clipboard.writeText(address)
+			setCopied(true)
+			toast({
+				title: "Address Copied",
+				description: "Wallet address copied to clipboard",
+			})
+			setTimeout(() => setCopied(false), 2000)
+		}
+	}
+
+	const formatAddress = (addr: string) => {
+		return `${addr.slice(0, 6)}...${addr.slice(-4)}`
+	}
+
+	const formatBalance = (balance: string) => {
+		const num = parseFloat(balance)
+		if (num === 0) return "0"
+		if (num < 0.001) return "< 0.001"
+		if (num < 1) return num.toFixed(3)
+		if (num < 1000) return num.toFixed(2)
+		return (num / 1000).toFixed(1) + "K"
+	}
+
+	const isWrongNetwork = chainId !== blockdagPrimordial.id
+
 	const walletVariants = {
 		hidden: { opacity: 0, y: 20 },
 		visible: { opacity: 1, y: 0 },
@@ -65,12 +128,120 @@ export function WalletModal({ children }: WalletModalProps) {
 
 	if (isConnected) {
 		return (
-			<Button
-				variant="outline"
-				onClick={() => disconnect()}
-				className="glass-card hover:bg-destructive/10">
-				Disconnect
-			</Button>
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<Button
+						variant="outline"
+						className={`glass-card hover:bg-primary/5 transition-all duration-200 ${
+							isWrongNetwork ? "border-destructive/50 bg-destructive/5" : ""
+						}`}>
+						<div className="flex items-center space-x-2">
+							{/* Network Status Indicator */}
+							<div
+								className={`w-2 h-2 rounded-full ${
+									isWrongNetwork ? "bg-destructive" : "bg-accent-success"
+								}`}
+							/>
+							
+							{/* Balance */}
+							<div className="flex items-center space-x-1">
+								{balanceLoading ? (
+									<RefreshCw className="w-3 h-3 animate-spin text-muted-foreground" />
+								) : (
+									<span className="text-sm font-medium">
+										{formatBalance(formatted)} {symbol}
+									</span>
+								)}
+							</div>
+
+							{/* Address */}
+							<span className="text-sm text-muted-foreground">
+								{formatAddress(address!)}
+							</span>
+
+							<ChevronDown className="w-3 h-3 text-muted-foreground" />
+						</div>
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent className="glass-card border-glass-border w-64">
+					{/* Wallet Info */}
+					<div className="px-3 py-2 border-b border-glass-border">
+						<div className="flex items-center justify-between">
+							<span className="text-xs text-muted-foreground">Connected</span>
+							<div className="flex items-center space-x-1">
+								<div
+									className={`w-2 h-2 rounded-full ${
+										isWrongNetwork ? "bg-destructive" : "bg-accent-success"
+									}`}
+								/>
+								<span className="text-xs text-muted-foreground">
+									{isWrongNetwork ? "Wrong Network" : "BlockDAG"}
+								</span>
+							</div>
+						</div>
+					</div>
+
+					{/* Balance Display */}
+					<div className="px-3 py-3">
+						<div className="flex items-center justify-between">
+							<span className="text-sm text-muted-foreground">Balance</span>
+							<div className="flex items-center space-x-1">
+								{balanceLoading ? (
+									<RefreshCw className="w-3 h-3 animate-spin text-muted-foreground" />
+								) : (
+									<span className="text-sm font-medium">
+										{formatBalance(formatted)} {symbol}
+									</span>
+								)}
+							</div>
+						</div>
+					</div>
+
+					{/* Address */}
+					<div className="px-3 py-2">
+						<div className="flex items-center justify-between">
+							<span className="text-xs text-muted-foreground">Address</span>
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={copyAddress}
+								className="h-6 px-2 text-xs">
+								{copied ? (
+									<Check className="w-3 h-3 text-accent-success" />
+								) : (
+									<Copy className="w-3 h-3" />
+								)}
+							</Button>
+						</div>
+						<div className="text-xs font-mono text-muted-foreground mt-1">
+							{formatAddress(address!)}
+						</div>
+					</div>
+
+					<DropdownMenuSeparator />
+
+					{/* Network Switch */}
+					{isWrongNetwork && (
+						<>
+							<DropdownMenuItem
+								onClick={handleSwitchChain}
+								className="text-destructive focus:text-destructive">
+								<RefreshCw className="w-4 h-4 mr-2" />
+								Switch to BlockDAG
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+						</>
+					)}
+
+					{/* Disconnect */}
+					<DropdownMenuItem
+						onClick={handleDisconnect}
+						className="text-destructive focus:text-destructive">
+						<LogOut className="w-4 h-4 mr-2" />
+						Disconnect
+					</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
 		)
 	}
 

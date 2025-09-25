@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { TagsList } from "@/components/ui/tags"
 import { TradeWidget } from "@/components/TradeWidget"
 import { LiquidityPanel } from "@/components/LiquidityPanel"
 import { useMarket } from "@/hooks/useMarket"
@@ -129,6 +130,33 @@ export default function MarketDetail() {
 							{market.title}
 						</h1>
 						<p className="text-muted-foreground max-w-2xl">{market.description}</p>
+						
+						{/* Tags and Additional Info */}
+						<div className="space-y-3">
+							{market.tags && market.tags.length > 0 && (
+								<div>
+									<TagsList
+										tags={market.tags}
+										variant="default"
+										size="md"
+										className="flex-wrap"
+									/>
+								</div>
+							)}
+							
+							{market.resolutionSource && (
+								<div className="flex items-center gap-2 text-sm text-muted-foreground">
+									<ExternalLink className="h-4 w-4" />
+									<span>Resolution Source: {market.resolutionSource}</span>
+								</div>
+							)}
+							
+							{market.template && (
+								<div className="flex items-center gap-2 text-sm text-muted-foreground">
+									<span>Template: {market.template}</span>
+								</div>
+							)}
+						</div>
 					</div>
 
 					<Button variant="outline" size="sm" className="glass-card">

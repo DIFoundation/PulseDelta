@@ -1,114 +1,206 @@
-"use client"
+"use client";
 
-import { useCallback } from "react"
-import { usePulseDeltaContract } from "@/hooks/use-contract"
-import { useTransaction } from "@/utils/optimistic"
-import { useToast } from "@/components/toast"
-import type { MarketFormData } from "@/components/MarketCreationWizard"
+import { useCallback } from "react";
+import { useFactory } from "@/hooks/useFactory";
+import { useTransaction } from "@/utils/optimistic";
+import { useToast } from "@/components/toast";
+import { MarketMetadataService } from "@/lib/supabase";
+import { useAccount } from "wagmi";
+import type { MarketFormData } from "@/components/MarketCreationWizard";
 
 /**
  * Hook for creating new prediction markets
  * Handles form validation, contract interaction, and user feedback
  */
 export function useCreateMarket() {
-	const { createMarket: contractCreateMarket, isPending } = usePulseDeltaContract()
-	const {
-		txState,
-		startTransaction,
-		setTransactionHash,
-		confirmTransaction,
-		failTransaction,
-		resetTransaction,
-	} = useTransaction()
-	const { addToast } = useToast()
+  const { address } = useAccount();
+  const {
+    createBinaryMarket,
+    createMultiMarket,
+    createScalarMarket,
+    isPending,
+  } = useFactory();
 
-	const createMarket = useCallback(
-		async (formData: MarketFormData) => {
-			if (!formData.template) {
-				throw new Error("Template is required")
-			}
+  const {
+    txState,
+    startTransaction,
+    setTransactionHash,
+    confirmTransaction,
+    failTransaction,
+    resetTransaction,
+  } = useTransaction();
+  const { addToast } = useToast();
 
-			try {
-				startTransaction()
+  const createMarket = useCallback(
+    async (formData: MarketFormData) => {
+      if (!formData.template) {
+        throw new Error("Template is required");
+      }
 
-				addToast({
-					title: "Creating Market",
-					description: "Submitting your market to the blockchain...",
-					type: "info",
-					duration: 5000,
-				})
+      if (!formData.marketType) {
+        throw new Error("Market type is required");
+      }
 
-				// Convert form data to contract parameters
-				const endTime = BigInt(new Date(formData.endDate).getTime() / 1000)
+      try {
+        startTransaction();
 
-				// Call contract function
-				const hash = await contractCreateMarket({
-					title: formData.title,
-					description: formData.description,
-					category: formData.category,
-					endTime,
-					resolutionSource: formData.resolutionSource,
-					outcomes: formData.outcomes,
-				})
+        // First, store frontend-only data in Supabase
+        const metadataData = {
+          category: formData.template.category.toLowerCase(),
+          market_type: formData.marketType,
+          tags: formData.tags,
+          resolution_source: formData.resolutionSource,
+          template_name: formData.template.name,
+          creator_address: address || "",
+        };
 
-				setTransactionHash(hash)
+        const metadata = await MarketMetadataService.create(metadataData);
+        if (!metadata) {
+          throw new Error("Failed to create market metadata");
+        }
 
-				addToast({
-					title: "Market Submitted",
-					description: "Your market is being processed on the blockchain",
-					type: "info",
-					duration: 5000,
-					action: {
-						label: "View Transaction",
-						onClick: () => window.open(`https://etherscan.io/tx/${hash}`, "_blank"),
-					},
-				})
+        addToast({
+          title: "Creating Market",
+          description: "Submitting your market to the blockchain...",
+          type: "info",
+          duration: 5000,
+        });
 
-				// Simulate confirmation (in real app, this would be handled by wagmi)
-				setTimeout(() => {
-					confirmTransaction("0.0045 ETH")
+        // Convert form data to contract parameters
+        const endTime = Math.floor(new Date(formData.endDate).getTime() / 1000);
+        const startTime = Math.floor(Date.now() / 1000) + 3600; // Start in 1 hour
+        const resolutionDeadline = endTime + 7 * 24 * 3600; // 7 days after end time
 
-					addToast({
-						title: "Market Created Successfully!",
-						description: "Your prediction market is now live and ready for trading",
-						type: "success",
-						duration: 8000,
-						action: {
-							label: "View Market",
-							onClick: () => {
-								// Navigate to market page
-								window.location.href = "/market/new"
-							},
-						},
-					})
-				}, 3000)
-			} catch (error) {
-				failTransaction(error instanceof Error ? error.message : "Failed to create market")
+        // Prepare common parameters
+        const commonParams = {
+          question: formData.title,
+          metadataURI: formData.description,
+          creator: "", // Will be set by the wallet
+          oracleAdapter: "", // Will be set by getOracleAddress
+          feeRouter: "", // Will be set by the factory
+          tokenFactory: "", // Will be set by the factory
+          marketKey: "", // Will be generated
+          feeBps: 100, // 1% fee
+          startTime,
+          endTime,
+          resolutionDeadline,
+          initialLiquidity: formData.initialLiquidity,
+        };
 
-				addToast({
-					title: "Market Creation Failed",
-					description: error instanceof Error ? error.message : "Unknown error occurred",
-					type: "error",
-					duration: 5000,
-				})
+        let hash: string;
 
-				throw error
-			}
-		},
-		[
-			contractCreateMarket,
-			addToast,
-			startTransaction,
-			setTransactionHash,
-			confirmTransaction,
-			failTransaction,
-		]
-	)
+        // Call appropriate factory function based on market type
+        let marketResult: { hash: string; marketAddress: string; marketId: number };
+        
+        if (formData.marketType === "binary") {
+          marketResult = await createBinaryMarket({
+            ...commonParams,
+            category: formData.template.category.toLowerCase() as
+              | "sports"
+              | "crypto"
+              | "trends"
+              | "other",
+          });
+        } else if (formData.marketType === "multi") {
+          marketResult = await createMultiMarket({
+            ...commonParams,
+            category: formData.template.category.toLowerCase() as
+              | "sports"
+              | "crypto"
+              | "trends"
+              | "other",
+            outcomes: formData.outcomes,
+          });
+        } else if (formData.marketType === "scalar") {
+          marketResult = await createScalarMarket({
+            ...commonParams,
+            category: formData.template.category.toLowerCase() as
+              | "sports"
+              | "crypto"
+              | "trends"
+              | "other",
+            minValue: formData.minValue || "0",
+            maxValue: formData.maxValue || "1000000",
+          });
+        } else {
+          throw new Error("Invalid market type");
+        }
 
-	return {
-		createMarket,
-		isCreating: isPending || txState.status === "pending" || txState.status === "confirming",
-		txState,
-		resetTransaction,
-	}
+        setTransactionHash(marketResult.hash);
+
+        addToast({
+          title: "Market Submitted",
+          description: "Your market is being processed on the blockchain",
+          type: "info",
+          duration: 5000,
+          action: {
+            label: "View Transaction",
+            onClick: () =>
+              window.open(`https://etherscan.io/tx/${marketResult.hash}`, "_blank"),
+          },
+        });
+
+        // Update Supabase with real contract data
+        await MarketMetadataService.updateWithContractData(
+          metadata.id,
+          marketResult.marketAddress,
+          marketResult.marketId
+        );
+
+        // Simulate confirmation (in real app, this would be handled by wagmi)
+        setTimeout(async () => {
+          confirmTransaction("0.0045 ETH");
+
+          addToast({
+            title: "Market Created Successfully!",
+            description:
+              "Your prediction market is now live and ready for trading",
+            type: "success",
+            duration: 8000,
+            action: {
+              label: "View Market",
+              onClick: () => {
+                // Navigate to market page
+                window.location.href = `/market/${mockMarketId}`;
+              },
+            },
+          });
+        }, 3000);
+      } catch (error) {
+        failTransaction(
+          error instanceof Error ? error.message : "Failed to create market"
+        );
+
+        addToast({
+          title: "Market Creation Failed",
+          description:
+            error instanceof Error ? error.message : "Unknown error occurred",
+          type: "error",
+          duration: 5000,
+        });
+
+        throw error;
+      }
+    },
+    [
+      createBinaryMarket,
+      createMultiMarket,
+      createScalarMarket,
+      addToast,
+      startTransaction,
+      setTransactionHash,
+      confirmTransaction,
+      failTransaction,
+    ]
+  );
+
+  return {
+    createMarket,
+    isCreating:
+      isPending ||
+      txState.status === "pending" ||
+      txState.status === "confirming",
+    txState,
+    resetTransaction,
+  };
 }

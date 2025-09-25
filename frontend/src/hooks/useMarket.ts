@@ -19,80 +19,125 @@ export function useMarketList(
 ) {
   const factory = useFactory();
 
-  // Get market counts for all factory types
-  const binaryCount = factory.getMarketCount("binary");
-  const multiCount = factory.getMarketCount("multi");
-  const scalarCount = factory.getMarketCount("scalar");
-
   return useQuery({
     queryKey: ["markets", offset, limit, filters],
     queryFn: async () => {
-      // Get all markets from all factory types
+      console.log("🚀 Starting market fetch...");
       const allMarkets: Market[] = [];
-      
-      // Fetch binary markets
-      if (binaryCount.data && Number(binaryCount.data) > 0) {
-        for (let i = 0; i < Number(binaryCount.data); i++) {
-          try {
-            const marketAddress = await factory.getMarketAddress("binary", i);
-            if (marketAddress) {
-              const marketData = await factory.getMarketData(marketAddress, "binary");
-              if (marketData) {
-                allMarkets.push(marketData);
-              }
-            }
-          } catch (error) {
-            console.warn(`Failed to fetch binary market ${i}:`, error);
-          }
-        }
-      }
 
-      // Fetch multi markets
-      if (multiCount.data && Number(multiCount.data) > 0) {
-        for (let i = 0; i < Number(multiCount.data); i++) {
-          try {
-            const marketAddress = await factory.getMarketAddress("multi", i);
-            if (marketAddress) {
-              const marketData = await factory.getMarketData(marketAddress, "multi");
-              if (marketData) {
-                allMarkets.push(marketData);
-              }
-            }
-          } catch (error) {
-            console.warn(`Failed to fetch multi market ${i}:`, error);
-          }
-        }
-      }
+      try {
+        // Use getAllMarkets like the working script
+        console.log("📊 Fetching binary markets...");
+        const binaryMarkets = await factory.getAllMarkets("binary");
+        console.log("Binary markets from getAllMarkets:", binaryMarkets);
 
-      // Fetch scalar markets
-      if (scalarCount.data && Number(scalarCount.data) > 0) {
-        for (let i = 0; i < Number(scalarCount.data); i++) {
-          try {
-            const marketAddress = await factory.getMarketAddress("scalar", i);
-            if (marketAddress) {
-              const marketData = await factory.getMarketData(marketAddress, "scalar");
-              if (marketData) {
-                allMarkets.push(marketData);
+        console.log("📊 Fetching multi markets...");
+        const multiMarkets = await factory.getAllMarkets("multi");
+        console.log("Multi markets from getAllMarkets:", multiMarkets);
+
+        console.log("📊 Fetching scalar markets...");
+        const scalarMarkets = await factory.getAllMarkets("scalar");
+        console.log("Scalar markets from getAllMarkets:", scalarMarkets);
+
+        // Process binary markets
+        if (binaryMarkets && binaryMarkets.length > 0) {
+          console.log(`Processing ${binaryMarkets.length} binary markets...`);
+          for (const marketAddress of binaryMarkets) {
+            console.log("Processing binary market:", marketAddress);
+            if (
+              marketAddress &&
+              marketAddress !== "0x0000000000000000000000000000000000000000"
+            ) {
+              try {
+                const marketData = await factory.getMarketData(
+                  marketAddress,
+                  "binary"
+                );
+                console.log("Binary market data:", marketData);
+                if (marketData) {
+                  allMarkets.push(marketData);
+                }
+              } catch (error) {
+                console.warn(
+                  `Failed to fetch binary market data for ${marketAddress}:`,
+                  error
+                );
               }
             }
-          } catch (error) {
-            console.warn(`Failed to fetch scalar market ${i}:`, error);
           }
         }
+
+        // Process multi markets
+        if (multiMarkets && multiMarkets.length > 0) {
+          console.log(`Processing ${multiMarkets.length} multi markets...`);
+          for (const marketAddress of multiMarkets) {
+            console.log("Processing multi market:", marketAddress);
+            if (
+              marketAddress &&
+              marketAddress !== "0x0000000000000000000000000000000000000000"
+            ) {
+              try {
+                const marketData = await factory.getMarketData(
+                  marketAddress,
+                  "multi"
+                );
+                console.log("Multi market data:", marketData);
+                if (marketData) {
+                  allMarkets.push(marketData);
+                }
+              } catch (error) {
+                console.warn(
+                  `Failed to fetch multi market data for ${marketAddress}:`,
+                  error
+                );
+              }
+            }
+          }
+        }
+
+        // Process scalar markets
+        if (scalarMarkets && scalarMarkets.length > 0) {
+          console.log(`Processing ${scalarMarkets.length} scalar markets...`);
+          for (const marketAddress of scalarMarkets) {
+            console.log("Processing scalar market:", marketAddress);
+            if (
+              marketAddress &&
+              marketAddress !== "0x0000000000000000000000000000000000000000"
+            ) {
+              try {
+                const marketData = await factory.getMarketData(
+                  marketAddress,
+                  "scalar"
+                );
+                console.log("Scalar market data:", marketData);
+                if (marketData) {
+                  allMarkets.push(marketData);
+                }
+              } catch (error) {
+                console.warn(
+                  `Failed to fetch scalar market data for ${marketAddress}:`,
+                  error
+                );
+              }
+            }
+          }
+        }
+
+        console.log("✅ Total markets fetched:", allMarkets.length);
+        console.log("All markets:", allMarkets);
+      } catch (error) {
+        console.error("❌ Failed to fetch markets:", error);
       }
 
       return allMarkets;
     },
     staleTime: 1000 * 60 * 2, // 2 minutes
-    enabled:
-      binaryCount.data !== undefined &&
-      multiCount.data !== undefined &&
-      scalarCount.data !== undefined,
   });
 }
 
 /**
  * Hook for fetching individual market details
+ * Now expects marketId to be in format "type:id" (e.g., "binary:1", "multi:2")
  */
 export function useMarket(marketId: string) {
   const factory = useFactory();
@@ -100,88 +145,71 @@ export function useMarket(marketId: string) {
   return useQuery({
     queryKey: ["market", marketId],
     queryFn: async () => {
-      // Try to find market in each factory type
-      const marketIdNum = parseInt(marketId);
-      
-      // Check binary markets first
-      const binaryCount = await factory.getMarketCount("binary");
-      const binaryCountNum = Number(binaryCount || 0);
-      if (binaryCount && marketIdNum < binaryCountNum) {
-        const marketAddress = await factory.getMarketAddress("binary", marketIdNum);
-        if (marketAddress) {
-          const onChainData = await factory.getMarketData(marketAddress, "binary");
-          if (onChainData) {
-            // Get Supabase metadata
-            const metadata = await MarketMetadataService.getByMarketAddress(marketAddress);
-            if (metadata) {
-              // Combine on-chain data with Supabase metadata
-              return {
-                ...onChainData,
-                category: metadata.category,
-                tags: metadata.tags,
-                resolutionSource: metadata.resolution_source,
-                template: metadata.template_name,
-                marketType: metadata.market_type,
-              };
-            }
-            return onChainData;
-          }
-        }
+      console.log("useMarket - Starting fetch for:", marketId);
+
+      // Parse marketId to get type and id
+      const [marketType, id] = marketId.split(":");
+      const marketIdNum = parseInt(id);
+
+      console.log("useMarket - Parsed:", { marketType, id, marketIdNum });
+
+      if (!marketType || !id || isNaN(marketIdNum)) {
+        throw new Error("Invalid market ID format. Expected format: 'type:id'");
       }
 
-      // Check multi markets
-      const multiCount = await factory.getMarketCount("multi");
-      const multiCountNum = Number(multiCount || 0);
-      if (multiCount && marketIdNum < binaryCountNum + multiCountNum) {
-        const marketAddress = await factory.getMarketAddress("multi", marketIdNum - binaryCountNum);
-        if (marketAddress) {
-          const onChainData = await factory.getMarketData(marketAddress, "multi");
-          if (onChainData) {
-            // Get Supabase metadata
-            const metadata = await MarketMetadataService.getByMarketAddress(marketAddress);
-            if (metadata) {
-              // Combine on-chain data with Supabase metadata
-              return {
-                ...onChainData,
-                category: metadata.category,
-                tags: metadata.tags,
-                resolutionSource: metadata.resolution_source,
-                template: metadata.template_name,
-                marketType: metadata.market_type,
-              };
-            }
-            return onChainData;
-          }
-        }
+      if (!["binary", "multi", "scalar"].includes(marketType)) {
+        throw new Error(
+          "Invalid market type. Must be 'binary', 'multi', or 'scalar'"
+        );
       }
 
-      // Check scalar markets
-      const scalarCount = await factory.getMarketCount("scalar");
-      const scalarCountNum = Number(scalarCount || 0);
-      if (scalarCount && marketIdNum < binaryCountNum + multiCountNum + scalarCountNum) {
-        const marketAddress = await factory.getMarketAddress("scalar", marketIdNum - binaryCountNum - multiCountNum);
-        if (marketAddress) {
-          const onChainData = await factory.getMarketData(marketAddress, "scalar");
-          if (onChainData) {
-            // Get Supabase metadata
-            const metadata = await MarketMetadataService.getByMarketAddress(marketAddress);
-            if (metadata) {
-              // Combine on-chain data with Supabase metadata
-              return {
-                ...onChainData,
-                category: metadata.category,
-                tags: metadata.tags,
-                resolutionSource: metadata.resolution_source,
-                template: metadata.template_name,
-                marketType: metadata.market_type,
-              };
-            }
-            return onChainData;
-          }
-        }
+      // Get market address
+      console.log(
+        "useMarket - Getting market address for:",
+        marketType,
+        marketIdNum
+      );
+      const marketAddress = await factory.getMarketAddress(
+        marketType as "binary" | "multi" | "scalar",
+        marketIdNum
+      );
+
+      console.log("useMarket - Market address:", marketAddress);
+
+      if (
+        !marketAddress ||
+        marketAddress === "0x0000000000000000000000000000000000000000"
+      ) {
+        throw new Error("Market not found");
       }
 
-      throw new Error("Market not found");
+      // Get on-chain data
+      const onChainData = await factory.getMarketData(
+        marketAddress,
+        marketType as "binary" | "multi" | "scalar"
+      );
+
+      if (!onChainData) {
+        throw new Error("Failed to fetch market data");
+      }
+
+      // Get Supabase metadata
+      const metadata = await MarketMetadataService.getByMarketAddress(
+        marketAddress
+      );
+      if (metadata) {
+        // Combine on-chain data with Supabase metadata
+        return {
+          ...onChainData,
+          category: metadata.category,
+          tags: metadata.tags,
+          resolutionSource: metadata.resolution_source,
+          template: metadata.template_name,
+          marketType: metadata.market_type,
+        };
+      }
+
+      return onChainData;
     },
     enabled: !!marketId,
     staleTime: 1000 * 30, // 30 seconds

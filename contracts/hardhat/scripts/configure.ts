@@ -59,74 +59,74 @@ async function main() {
     CONTRACT_ADDRESSES.tokenFactory
   );
 
-  // Configure Oracle Reporters and Authorize Factories
-  console.log("1️⃣ Configuring Oracle Reporters and Authorizing Factories...");
+  // // Configure Oracle Reporters and Authorize Factories
+  // console.log("1️⃣ Configuring Oracle Reporters and Authorizing Factories...");
 
-  // Set reporter (deployer) for crypto oracle
-  await cryptoOracle.connect(deployer).setReporter(deployer.address, true);
-  // Authorize factories for crypto oracle
-  await cryptoOracle
-    .connect(deployer)
-    .setFactory(await binaryFactory.getAddress(), true);
-  await cryptoOracle
-    .connect(deployer)
-    .setFactory(await multiFactory.getAddress(), true);
-  await cryptoOracle
-    .connect(deployer)
-    .setFactory(await scalarFactory.getAddress(), true);
-  console.log("✅ Crypto Oracle reporter and factories configured");
+  // // Set reporter (deployer) for crypto oracle
+  // await cryptoOracle.connect(deployer).setReporter(deployer.address, true);
+  // // Authorize factories for crypto oracle
+  // await cryptoOracle
+  //   .connect(deployer)
+  //   .setFactory(await binaryFactory.getAddress(), true);
+  // await cryptoOracle
+  //   .connect(deployer)
+  //   .setFactory(await multiFactory.getAddress(), true);
+  // await cryptoOracle
+  //   .connect(deployer)
+  //   .setFactory(await scalarFactory.getAddress(), true);
+  // console.log("✅ Crypto Oracle reporter and factories configured");
 
-  // // Set reporter (deployer) for sports oracle
-  await sportsOracle.connect(deployer).setReporter(deployer.address, true);
-  // Authorize factories for sports oracle
-  await sportsOracle
-    .connect(deployer)
-    .setFactory(await binaryFactory.getAddress(), true);
-  await sportsOracle
-    .connect(deployer)
-    .setFactory(await multiFactory.getAddress(), true);
-  await sportsOracle
-    .connect(deployer)
-    .setFactory(await scalarFactory.getAddress(), true);
-  console.log("✅ Sports Oracle reporter and factories configured");
+  // // // Set reporter (deployer) for sports oracle
+  // await sportsOracle.connect(deployer).setReporter(deployer.address, true);
+  // // Authorize factories for sports oracle
+  // await sportsOracle
+  //   .connect(deployer)
+  //   .setFactory(await binaryFactory.getAddress(), true);
+  // await sportsOracle
+  //   .connect(deployer)
+  //   .setFactory(await multiFactory.getAddress(), true);
+  // await sportsOracle
+  //   .connect(deployer)
+  //   .setFactory(await scalarFactory.getAddress(), true);
+  // console.log("✅ Sports Oracle reporter and factories configured");
 
-  // Set reporter (deployer) for trends oracle
-  await trendsOracle.connect(deployer).setReporter(deployer.address, true);
-  // Authorize factories for trends oracle
-  await trendsOracle
-    .connect(deployer)
-    .setFactory(await binaryFactory.getAddress(), true);
-  await trendsOracle
-    .connect(deployer)
-    .setFactory(await multiFactory.getAddress(), true);
-  await trendsOracle
-    .connect(deployer)
-    .setFactory(await scalarFactory.getAddress(), true);
-  console.log("✅ Trends Oracle reporter and factories configured");
+  // // Set reporter (deployer) for trends oracle
+  // await trendsOracle.connect(deployer).setReporter(deployer.address, true);
+  // // Authorize factories for trends oracle
+  // await trendsOracle
+  //   .connect(deployer)
+  //   .setFactory(await binaryFactory.getAddress(), true);
+  // await trendsOracle
+  //   .connect(deployer)
+  //   .setFactory(await multiFactory.getAddress(), true);
+  // await trendsOracle
+  //   .connect(deployer)
+  //   .setFactory(await scalarFactory.getAddress(), true);
+  // console.log("✅ Trends Oracle reporter and factories configured");
 
-  // Fund wDAG contract for testing (optional)
-  console.log("\n2️⃣ Funding wDAG contract...");
-  const fundingTx = await deployer.sendTransaction({
-    to: await wDAG.getAddress(),
-    value: ethers.parseEther("10"), // 10 DAG (reduced from 1000)
-  });
-  await fundingTx.wait();
-  console.log("✅ wDAG contract funded with 10 DAG");
+  // // Fund wDAG contract for testing (optional)
+  // console.log("\n2️⃣ Funding wDAG contract...");
+  // const fundingTx = await deployer.sendTransaction({
+  //   to: await wDAG.getAddress(),
+  //   value: ethers.parseEther("10"), // 10 DAG (reduced from 1000)
+  // });
+  // await fundingTx.wait();
+  // console.log("✅ wDAG contract funded with 10 DAG");
 
-  // Fund deployer with wDAG for bonds and trading
-  console.log("\n3️⃣ Funding deployer...");
+  // // Fund deployer with wDAG for bonds and trading
+  // console.log("\n3️⃣ Funding deployer...");
 
-  // Mint wDAG for deployer
-  await wDAG.connect(deployer).mint(deployer.address, ethers.parseEther("100"));
-  console.log("✅ Deployer funded with wDAG");
+  // // Mint wDAG for deployer
+  // await wDAG.connect(deployer).mint(deployer.address, ethers.parseEther("100"));
+  // console.log("✅ Deployer funded with wDAG");
 
-  // Create sample markets for testing
-  console.log("\n4️⃣ Creating sample markets...");
+  // // Create sample markets for testing
+  // console.log("\n4️⃣ Creating sample markets...");
 
   // Binary market
   const binaryMarketTx = await binaryFactory.connect(deployer).createBinary(
     await wDAG.getAddress(),
-    "Will Bitcoin reach $100,000 by end of 2024?",
+    "Will Ethereum reach $100,000 by end of 2025?",
     "https://metadata.example.com/bitcoin-100k",
     deployer.address,
     await cryptoOracle.getAddress(),

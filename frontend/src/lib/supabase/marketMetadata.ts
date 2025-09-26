@@ -11,11 +11,11 @@ export class MarketMetadataService {
     data: CreateMarketMetadataData
   ): Promise<MarketMetadata | null> {
     try {
-        const { data: result, error } = await supabase
-          .from("pulsedelta")
-          .insert([data])
-          .select()
-          .single();
+      const { data: result, error } = await supabase
+        .from("pulsedelta")
+        .insert([data])
+        .select()
+        .single();
 
       if (error) {
         console.error("Error creating market metadata:", error);
@@ -36,16 +36,16 @@ export class MarketMetadataService {
     marketId: number
   ): Promise<MarketMetadata | null> {
     try {
-        const { data: result, error } = await supabase
-          .from("pulsedelta")
-          .update({
-            market_address: marketAddress,
-            market_id: marketId,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", id)
-          .select()
-          .single();
+      const { data: result, error } = await supabase
+        .from("pulsedelta")
+        .update({
+          market_adddress: marketAddress,
+          market_id: marketId,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .select()
+        .single();
 
       if (error) {
         console.error("Error updating market metadata:", error);
@@ -64,11 +64,11 @@ export class MarketMetadataService {
     marketAddress: string
   ): Promise<MarketMetadata | null> {
     try {
-        const { data: result, error } = await supabase
-          .from("pulsedelta")
-          .select("*")
-          .eq("market_address", marketAddress)
-          .single();
+      const { data: result, error } = await supabase
+        .from("pulsedelta")
+        .select("*")
+        .eq("market_adddress", marketAddress)
+        .single();
 
       if (error) {
         console.error("Error fetching market metadata:", error);
@@ -85,10 +85,10 @@ export class MarketMetadataService {
   // Get all market metadata
   static async getAll(): Promise<MarketMetadata[]> {
     try {
-        const { data: result, error } = await supabase
-          .from("pulsedelta")
-          .select("*")
-          .order("created_at", { ascending: false });
+      const { data: result, error } = await supabase
+        .from("pulsedelta")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) {
         console.error("Error fetching all market metadata:", error);
@@ -105,11 +105,11 @@ export class MarketMetadataService {
   // Get market metadata by creator
   static async getByCreator(creatorAddress: string): Promise<MarketMetadata[]> {
     try {
-        const { data: result, error } = await supabase
-          .from("pulsedelta")
-          .select("*")
-          .eq("creator_address", creatorAddress)
-          .order("created_at", { ascending: false });
+      const { data: result, error } = await supabase
+        .from("pulsedelta")
+        .select("*")
+        .eq("creator_address", creatorAddress)
+        .order("created_at", { ascending: false });
 
       if (error) {
         console.error("Error fetching market metadata by creator:", error);
@@ -126,13 +126,13 @@ export class MarketMetadataService {
   // Search markets by tags or category
   static async search(query: string): Promise<MarketMetadata[]> {
     try {
-        const { data: result, error } = await supabase
-          .from("pulsedelta")
-          .select("*")
-          .or(
-            `tags.cs.{${query}},category.ilike.%${query}%,template_name.ilike.%${query}%`
-          )
-          .order("created_at", { ascending: false });
+      const { data: result, error } = await supabase
+        .from("pulsedelta")
+        .select("*")
+        .or(
+          `tags.cs.{${query}},category.ilike.%${query}%,template_name.ilike.%${query}%`
+        )
+        .order("created_at", { ascending: false });
 
       if (error) {
         console.error("Error searching market metadata:", error);
@@ -152,15 +152,15 @@ export class MarketMetadataService {
     data: UpdateMarketMetadataData
   ): Promise<MarketMetadata | null> {
     try {
-        const { data: result, error } = await supabase
-          .from("pulsedelta")
-          .update({
-            ...data,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", id)
-          .select()
-          .single();
+      const { data: result, error } = await supabase
+        .from("pulsedelta")
+        .update({
+          ...data,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .select()
+        .single();
 
       if (error) {
         console.error("Error updating market metadata:", error);
@@ -177,10 +177,7 @@ export class MarketMetadataService {
   // Delete market metadata
   static async delete(id: string): Promise<boolean> {
     try {
-        const { error } = await supabase
-          .from("pulsedelta")
-          .delete()
-          .eq("id", id);
+      const { error } = await supabase.from("pulsedelta").delete().eq("id", id);
 
       if (error) {
         console.error("Error deleting market metadata:", error);

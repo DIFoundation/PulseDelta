@@ -191,12 +191,12 @@ export function MarketPreview({ market, className }: MarketPreviewProps) {
 			</Card>
 
 			{/* Action Buttons */}
-			<div className="flex gap-3">
+			{/* <div className="flex gap-3">
 				<Button variant="outline" className="flex-1 glass-card bg-transparent">
 					Edit Market
 				</Button>
 				<Button className="flex-1 bg-primary hover:bg-primary/90">Create Market</Button>
-			</div>
+			</div> */}
 		</motion.div>
 	)
 }

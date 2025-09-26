@@ -183,6 +183,10 @@ export function useCreateMarket() {
               },
             },
           });
+
+          // Redirect user to the marketplace after successful creation
+          // This ensures users land on the markets listing page immediately
+          window.location.href = "/markets";
         }, 3000);
       } catch (error) {
         failTransaction(

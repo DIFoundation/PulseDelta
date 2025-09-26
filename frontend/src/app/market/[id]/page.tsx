@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -63,12 +63,12 @@ export default function MarketDetail() {
           The market you&apos;re looking for doesn&apos;t exist or has been
           removed.
         </p>
-        <Link href="/">
+        <Button variant="outline" onClick={() => window.history.back()}>
           <Button variant="outline">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Markets
           </Button>
-        </Link>
+        </Button>
       </div>
     );
   }
@@ -110,14 +110,12 @@ export default function MarketDetail() {
     >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <Link href="/">
-          <Button variant="ghost" size="sm" className="glass-card">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Markets
-          </Button>
-        </Link>
+        <Button variant="outline" onClick={() => window.history.back()} size="sm" className="glass-card">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Markets
+        </Button>
 
-        <Button variant="ghost" size="sm" className="glass-card">
+        <Button variant="outline" size="sm" className="glass-card">
           <Share className="w-4 h-4 mr-2" />
           Share
         </Button>

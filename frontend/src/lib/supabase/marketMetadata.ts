@@ -71,7 +71,7 @@ export class MarketMetadataService {
         .single();
 
       if (error) {
-        console.error("Error fetching market metadata:", error);
+        console.error("Error fetching market metadata:", error?.message || error);
         return null;
       }
 

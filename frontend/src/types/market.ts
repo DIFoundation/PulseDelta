@@ -57,7 +57,7 @@ export interface MarketMetadata {
   resolutionSource?: string;
 }
 
-export type MarketCategory = "sports" | "crypto" | "trends" | "other";
+export type MarketCategory = "sports" | "crypto" | "trends";
 
 export type MarketStatus = "open" | "closed" | "resolved" | "disputed";
 

@@ -3,6 +3,7 @@ import { useReadContract } from "wagmi";
 import { useFactory } from "./useFactory";
 import { MarketMetadataService } from "@/lib/supabase";
 import { CONTRACT_ADDRESSES, ABI } from "@/lib/abiAndAddress";
+import { isMarketCategory } from "@/utils/guard";
 import type { Market, CreateMarketParams, TradeOrder } from "@/types/market";
 
 /**
@@ -201,7 +202,9 @@ export function useMarket(marketId: string) {
         // Combine on-chain data with Supabase metadata
         return {
           ...onChainData,
-          category: metadata.category,
+          category: isMarketCategory(metadata.category)
+            ? metadata.category
+            : onChainData.category,
           tags: metadata.tags,
           resolutionSource: metadata.resolution_source,
           template: metadata.template_name,
@@ -212,7 +215,8 @@ export function useMarket(marketId: string) {
       return onChainData;
     },
     enabled: !!marketId,
-    staleTime: 1000 * 30, // 30 seconds
+    staleTime: 1000 * 5,
+    refetchInterval: 1000 * 5,
   });
 }
 

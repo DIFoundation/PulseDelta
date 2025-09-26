@@ -664,7 +664,7 @@ export function useFactory() {
           id: `${type}:${(marketId as bigint).toString()}`,
           title: question as string,
           description: metadataURI as string,
-          category: "crypto", // Default category - would need to determine from oracle
+          category: "crypto" as MarketCategory, // Default category - would need to determine from oracle
           outcomes: marketOutcomes,
           outcomeShares,
           creator: creator as string,

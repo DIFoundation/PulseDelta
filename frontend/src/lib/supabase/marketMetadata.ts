@@ -68,10 +68,10 @@ export class MarketMetadataService {
           .from("pulsedelta")
           .select("*")
           .eq("market_address", marketAddress)
-          .single();
+          .maybeSingle();
 
       if (error) {
-        console.error("Error fetching market metadata:", error);
+        console.error("Error fetching market metadata:", error?.message || error);
         return null;
       }
 

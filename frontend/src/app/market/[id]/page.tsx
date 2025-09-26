@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { redirect, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -35,6 +35,11 @@ export default function MarketDetail() {
 
   const { data: market, isLoading, error } = useMarket(id);
   const [selectedOutcome, setSelectedOutcome] = useState(0);
+  const [, setTick] = useState(0)
+  useEffect(() => {
+    const t = setInterval(() => setTick((n) => n + 1), 1000)
+    return () => clearInterval(t)
+  }, [])
 
   console.log("MarketDetail - Market data:", market);
   console.log("MarketDetail - Market title:", market?.title);
@@ -275,14 +280,14 @@ export default function MarketDetail() {
 
         <TabsContent value="trade">
           <TradeWidget
-            market={market}
+            market={market as any}
             selectedOutcome={selectedOutcome}
             formatPrice={formatPrice}
           />
         </TabsContent>
 
         <TabsContent value="liquidity">
-          <LiquidityPanel market={market} />
+          <LiquidityPanel market={market as any} />
         </TabsContent>
       </Tabs>
     </motion.div>

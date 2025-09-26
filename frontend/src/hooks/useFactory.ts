@@ -19,6 +19,7 @@ import type {
   MarketCategory,
   Market,
 } from "@/types/market";
+import { log } from "console";
 
 /**
  * Get the appropriate oracle address based on market category
@@ -31,7 +32,6 @@ const getOracleAddress = (category: MarketCategory): `0x${string}` => {
       return CONTRACT_ADDRESSES.cryptoOracle as `0x${string}`;
     case "trends":
       return CONTRACT_ADDRESSES.trendsOracle as `0x${string}`;
-    case "other":
     default:
       return CONTRACT_ADDRESSES.cryptoOracle as `0x${string}`;
   }
@@ -429,7 +429,9 @@ export function useFactory() {
                 functionName: "marketOf",
                 args: [BigInt(i)],
               });
+              console.log("market nowwwwwwwwwwwwwwwwwwwwwwwww");
               console.log(`📍 Market ${i} address:`, marketAddress);
+              console.log("market hereeeeeeeeeeeeeeeeeeeee");
               if (
                 marketAddress &&
                 marketAddress !== "0x0000000000000000000000000000000000000000"
@@ -527,7 +529,11 @@ export function useFactory() {
 
   // Get market data by address
   const getMarketData = useCallback(
-    async (marketAddress: string, type: "binary" | "multi" | "scalar") => {
+    async (
+      marketAddress: string,
+      type: "binary" | "multi" | "scalar",
+      globalMarketId?: number
+    ) => {
       console.log(`📊 Getting market data for ${type} market:`, marketAddress);
       try {
         // Get the appropriate market ABI
@@ -631,11 +637,18 @@ export function useFactory() {
         // Get curation status from Curation contract
         let curationStatus: "Pending" | "Approved" | "Flagged" = "Pending";
         try {
+          // Use globalMarketId if provided, otherwise fall back to individual marketId
+          const curationMarketId =
+            globalMarketId !== undefined ? globalMarketId : Number(marketId);
+          console.log(
+            `🔍 Getting curation status for market ID: ${curationMarketId} (global: ${globalMarketId}, individual: ${marketId})`
+          );
+
           const curationResult = await readContract(config, {
             address: CONTRACT_ADDRESSES.curation as `0x${string}`,
             abi: ABI.curation,
             functionName: "statusOf",
-            args: [BigInt(marketId)],
+            args: [BigInt(curationMarketId)],
           });
 
           // Convert contract status to our enum
@@ -659,12 +672,56 @@ export function useFactory() {
         const stateMap = ["Open", "Closed", "Resolved"] as const;
         const marketState = stateMap[Number(state)] || "Open";
 
+        // Get oracle adapter address to determine category
+        let oracleAddress: string;
+        try {
+          const oracleResult = await readContract(config, {
+            address: marketAddress as `0x${string}`,
+            abi: MARKET_ABIS[`${type}Market` as keyof typeof MARKET_ABIS],
+            functionName: "oracle",
+          });
+          oracleAddress = oracleResult as string;
+          console.log(`🔍 Oracle address for ${marketAddress}:`, oracleAddress);
+        } catch (error) {
+          console.warn(
+            `⚠️ Failed to get oracle address for ${marketAddress}:`,
+            error
+          );
+          oracleAddress = "";
+        }
+
+        // Map oracle adapter to category
+        let category: "crypto" | "sports" | "trends" = "crypto"; // Default fallback
+        if (oracleAddress) {
+          if (
+            oracleAddress.toLowerCase() ===
+            CONTRACT_ADDRESSES.cryptoOracle.toLowerCase()
+          ) {
+            category = "crypto";
+          } else if (
+            oracleAddress.toLowerCase() ===
+            CONTRACT_ADDRESSES.sportsOracle.toLowerCase()
+          ) {
+            category = "sports";
+          } else if (
+            oracleAddress.toLowerCase() ===
+            CONTRACT_ADDRESSES.trendsOracle.toLowerCase()
+          ) {
+            category = "trends";
+          }
+        }
+        console.log(`📊 Category for ${marketAddress}:`, category);
+
         // Convert to Market type
         const market: Market = {
-          id: `${type}:${(marketId as bigint).toString()}`,
+          id: `${type}:${
+            globalMarketId !== undefined
+              ? globalMarketId
+              : (marketId as bigint).toString()
+          }`,
           title: question as string,
           description: metadataURI as string,
-          category: "crypto" as MarketCategory, // Default category - would need to determine from oracle
+          category: category,
           outcomes: marketOutcomes,
           outcomeShares,
           creator: creator as string,
@@ -740,6 +797,56 @@ export function useFactory() {
     }
   };
 
+  /**
+   * Get all markets from all factories
+   */
+  const getAllMarketsFromAllFactories = useCallback(async () => {
+    console.log(`🔍 Getting all markets from all factories...`);
+
+    const allMarkets: Market[] = [];
+
+    // Get markets from each factory type
+    const factoryTypes: ("binary" | "multi" | "scalar")[] = [
+      "binary",
+      "multi",
+      "scalar",
+    ];
+
+    for (const factoryType of factoryTypes) {
+      try {
+        console.log(`📊 Fetching ${factoryType} markets...`);
+        const marketAddresses = await getAllMarkets(factoryType);
+        console.log(
+          `✅ Found ${marketAddresses.length} ${factoryType} markets:`,
+          marketAddresses
+        );
+
+        // Get detailed data for each market
+        for (const marketAddress of marketAddresses) {
+          try {
+            const marketData = await getMarketData(marketAddress, factoryType);
+            if (marketData) {
+              allMarkets.push(marketData);
+            }
+          } catch (error) {
+            console.warn(
+              `⚠️ Failed to get data for ${factoryType} market ${marketAddress}:`,
+              error
+            );
+          }
+        }
+      } catch (error) {
+        console.error(`❌ Error fetching ${factoryType} markets:`, error);
+      }
+    }
+
+    console.log(
+      `📊 Total markets found across all factories:`,
+      allMarkets.length
+    );
+    return allMarkets;
+  }, [getAllMarkets, getMarketData]);
+
   return {
     // Market creation functions
     createBinaryMarket,
@@ -749,6 +856,7 @@ export function useFactory() {
     // Read functions
     getMarketCount,
     getAllMarkets,
+    getAllMarketsFromAllFactories,
     getMarketsByStatus,
     getMarketAddress,
     getMarketData,

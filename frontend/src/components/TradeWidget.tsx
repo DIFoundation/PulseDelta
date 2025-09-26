@@ -1,173 +1,55 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useEffect, useMemo, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { Market } from "@/types/market"
-import { useMarketTrade } from "@/hooks/useMarketTrade"
-import { useToast } from "@/components/toast"
-import { Skeleton } from "./ui/skeleton"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { Market } from "@/types/market";
 
 interface TradeWidgetProps {
-  market: Market
-  selectedOutcome: number
+  market: Market;
+  selectedOutcome: number;
+  formatPrice: (price: string) => string;
+  onTrade?: (outcomeIndex: number, action: "buy" | "sell") => void;
 }
 
-export function TradeWidget({ market, selectedOutcome }: TradeWidgetProps) {
-  const [amount, setAmount] = useState("")
-  const [isApproving, setIsApproving] = useState(false)
-  const [isTrading, setIsTrading] = useState(false)
-  const { addToast } = useToast()
+export function TradeWidget({
+  market,
+  selectedOutcome,
+  formatPrice,
+  onTrade,
+}: TradeWidgetProps) {
+  const [amount, setAmount] = useState("");
+  const [activeTab, setActiveTab] = useState("buy");
 
-  // Determine market type and initialize appropriate trade hook
-  const trade = useMarketTrade(market.id, selectedOutcome)
-  
-  // Check if market is scalar (needs separate handling)
-  const isScalar = useMemo(
-    () => market.marketType === "scalar" || 
-          (market.outcomes.length === 2 && 
-           market.outcomes.includes("Long") && 
-           market.outcomes.includes("Short")),
-    [market]
-  )
-
-  // Check allowance when amount changes
-  const [isApproved, setIsApproved] = useState(false)
-  useEffect(() => {
-    let cancelled = false
-    const checkAllowance = async () => {
-      if (amount && !isNaN(Number(amount)) && Number(amount) > 0) {
-        const approved = await trade.checkAllowance(amount)
-        if (!cancelled) {
-          setIsApproved(approved)
-        }
-      } else {
-        setIsApproved(false)
-      }
+  const handleTrade = (action: "buy" | "sell") => {
+    if (onTrade) {
+      onTrade(selectedOutcome, action);
     }
-    checkAllowance()
-    return () => { cancelled = true }
-  }, [amount, trade])
+  };
 
-  const handleApprove = async () => {
-    if (!amount || Number(amount) <= 0) {
-      addToast({
-        title: "Invalid amount",
-        description: "Please enter a valid amount to approve",
-        type: "error",
-        duration: 3000,
-      })
-      return
+  // Calculate cost based on AMM formula
+  const calculateCost = (shares: number, isBuy: boolean) => {
+    if (!shares || shares <= 0) return 0;
+
+    const outcome = market.outcomeShares[selectedOutcome];
+    const currentPrice = parseFloat(outcome.price);
+
+    // For buying: cost = shares * price
+    // For "selling" (buying opposite): cost = shares * (1 - currentPrice)
+    if (isBuy) {
+      return shares * currentPrice;
+    } else {
+      // Selling means buying the opposite outcome
+      const oppositePrice = 1 - currentPrice;
+      return shares * oppositePrice;
     }
+  };
 
-    try {
-      setIsApproving(true)
-      addToast({
-        title: "Approving tokens",
-        description: `Approving ${amount} tokens for trading...`,
-        type: "info",
-      })
-      
-      await trade.approve(amount)
-      setIsApproved(true)
-      
-      addToast({
-        title: "Approval confirmed",
-        description: "You can now place your trade",
-        type: "success",
-      })
-    } catch (error) {
-      console.error("Approval failed:", error)
-      addToast({
-        title: "Approval failed",
-        description: error instanceof Error ? error.message : "Failed to approve tokens",
-        type: "error",
-      })
-    } finally {
-      setIsApproving(false)
-    }
-  }
-
-  const handleTrade = async (action: 'buy' | 'sell') => {
-    if (!amount || Number(amount) <= 0) {
-      addToast({
-        title: "Invalid amount",
-        description: "Please enter a valid amount to trade",
-        type: "error",
-      })
-      return
-    }
-
-    if (isScalar && !isApproved && action === 'buy') {
-      addToast({
-        title: "Approval required",
-        description: "Please approve the token amount before buying",
-        type: "error",
-      })
-      return
-    }
-
-    try {
-      setIsTrading(true)
-      const actionName = action === 'buy' ? 'Buying' : 'Selling'
-      
-      addToast({
-        title: `${actionName} shares`,
-        description: `Processing your ${action} order...`,
-        type: "info",
-      })
-
-      if (action === 'buy') {
-        if (isScalar) {
-          await trade.buy({ isLong: selectedOutcome === 0, amount })
-        } else {
-          await trade.buy(amount)
-        }
-      } else {
-        await trade.sell(amount)
-      }
-
-      addToast({
-        title: "Trade executed",
-        description: `Successfully ${action === 'buy' ? 'bought' : 'sold'} ${amount} shares`,
-        type: "success",
-      })
-      
-      // Reset form
-      setAmount("")
-    } catch (error) {
-      console.error("Trade failed:", error)
-      addToast({
-        title: "Trade failed",
-        description: error instanceof Error ? error.message : "Failed to execute trade",
-        type: "error",
-      })
-    } finally {
-      setIsTrading(false)
-    }
-  }
-
-  const renderActionButton = (action: 'buy' | 'sell') => {
-    const isBuy = action === 'buy'
-    const isDisabled = isTrading || isApproving || !amount || Number(amount) <= 0 || 
-                      (isBuy && isScalar && !isApproved)
-    
-    const buttonText = isBuy 
-      ? isScalar && !isApproved ? "Approve & Buy" : "Buy Shares" 
-      : "Sell Shares"
-
-    return (
-      <Button
-        className={`w-full ${isBuy ? 'buy-gradient' : 'sell-gradient'}`}
-        onClick={() => isBuy && isScalar && !isApproved ? handleApprove() : handleTrade(action)}
-        disabled={isDisabled}
-        isLoading={isTrading || (isApproving && isBuy)}
-      >
-        {buttonText}
-      </Button>
-    )
-  }
+  const shares = parseFloat(amount) || 0;
+  const cost = calculateCost(shares, activeTab === "buy");
+  const fee = cost * 0.01; // 1% fee
+  const totalCost = cost + fee;
 
   return (
     <Card className="glass-card">
@@ -175,53 +57,137 @@ export function TradeWidget({ market, selectedOutcome }: TradeWidgetProps) {
         <CardTitle>Trade</CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="buy">
+        <Tabs defaultValue="buy" onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="buy">Buy</TabsTrigger>
-            <TabsTrigger 
-              value="sell" 
-              disabled={isScalar} // Disable sell tab for scalar markets
-              title={isScalar ? "Scalar markets don't support selling before resolution" : ""}
-            >
-              Sell
-            </TabsTrigger>
+            <TabsTrigger value="sell">Sell</TabsTrigger>
           </TabsList>
-          
           <TabsContent value="buy" className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Amount</label>
+            <div>
               <Input
-                type="number"
-                min="0"
-                step="0.000000000000000001"
-                placeholder="0.0"
+                placeholder="Number of shares"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                disabled={isTrading || isApproving}
+                type="number"
+                min="0"
+                step="0.1"
               />
+              {shares > 0 && (
+                <div className="mt-3 p-3 bg-muted/50 rounded-lg space-y-2">
+                  <div className="text-sm font-medium text-muted-foreground">
+                    Cost Breakdown
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Shares:</span>
+                    <span>
+                      {shares.toFixed(2)} {market.outcomes[selectedOutcome]}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Price per share:</span>
+                    <span>
+                      {formatPrice(market.outcomeShares[selectedOutcome].price)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Subtotal:</span>
+                    <span>{cost.toFixed(3)} wDAG</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Fee (1%):</span>
+                    <span>{fee.toFixed(3)} wDAG</span>
+                  </div>
+                  <div className="flex justify-between text-sm font-semibold border-t pt-2">
+                    <span>Total Cost:</span>
+                    <span className="text-primary">
+                      {totalCost.toFixed(3)} wDAG
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
-            {renderActionButton('buy')}
+            <Button
+              className="w-full buy-gradient"
+              onClick={() => handleTrade("buy")}
+              disabled={!shares || shares <= 0}
+            >
+              Buy {market.outcomes[selectedOutcome]} Shares
+            </Button>
           </TabsContent>
-          
-          {!isScalar && (
-            <TabsContent value="sell" className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Amount</label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.000000000000000001"
-                  placeholder="0.0"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  disabled={isTrading}
-                />
-              </div>
-              {renderActionButton('sell')}
-            </TabsContent>
-          )}
+          <TabsContent value="sell" className="space-y-4">
+            <div>
+              <Input
+                placeholder="Number of shares"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                type="number"
+                min="0"
+                step="0.1"
+              />
+              {shares > 0 && (
+                <div className="mt-3 p-3 bg-muted/50 rounded-lg space-y-2">
+                  <div className="text-sm font-medium text-muted-foreground">
+                    Cost Breakdown
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Selling:</span>
+                    <span>
+                      {shares.toFixed(2)} {market.outcomes[selectedOutcome]}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Buying instead:</span>
+                    <span>
+                      {shares.toFixed(2)}{" "}
+                      {
+                        market.outcomes[
+                          selectedOutcome === 0
+                            ? market.outcomes[1]
+                            : market.outcomes[0]
+                        ]
+                      }
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Opposite price:</span>
+                    <span>
+                      {formatPrice(
+                        (
+                          1 -
+                          parseFloat(
+                            market.outcomeShares[selectedOutcome].price
+                          )
+                        ).toString()
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Subtotal:</span>
+                    <span>{cost.toFixed(3)} wDAG</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Fee (1%):</span>
+                    <span>{fee.toFixed(3)} wDAG</span>
+                  </div>
+                  <div className="flex justify-between text-sm font-semibold border-t pt-2">
+                    <span>Total Cost:</span>
+                    <span className="text-primary">
+                      {totalCost.toFixed(3)} wDAG
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+            <Button
+              className="w-full sell-gradient"
+              onClick={() => handleTrade("sell")}
+              disabled={!shares || shares <= 0}
+            >
+              Sell {market.outcomes[selectedOutcome]} Shares
+            </Button>
+          </TabsContent>
         </Tabs>
       </CardContent>
     </Card>
-  )
+  );
 }

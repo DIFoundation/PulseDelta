@@ -43,8 +43,14 @@ export function useMarketList(
         // Process binary markets
         if (binaryMarkets && binaryMarkets.length > 0) {
           console.log(`Processing ${binaryMarkets.length} binary markets...`);
-          for (const marketAddress of binaryMarkets) {
-            console.log("Processing binary market:", marketAddress);
+          for (let i = 0; i < binaryMarkets.length; i++) {
+            const marketAddress = binaryMarkets[i];
+            console.log(
+              "Processing binary market:",
+              marketAddress,
+              "at index:",
+              i
+            );
             if (
               marketAddress &&
               marketAddress !== "0x0000000000000000000000000000000000000000"
@@ -52,9 +58,12 @@ export function useMarketList(
               try {
                 const marketData = await factory.getMarketData(
                   marketAddress,
-                  "binary"
+                  "binary",
+                  i + 1 // Pass the global market ID (1-indexed to match contract)
                 );
                 console.log("Binary market data:", marketData);
+                console.log("Binary market ID:", marketData?.id);
+                console.log("Binary market title:", marketData?.title);
                 if (marketData) {
                   allMarkets.push(marketData);
                 }
@@ -71,8 +80,14 @@ export function useMarketList(
         // Process multi markets
         if (multiMarkets && multiMarkets.length > 0) {
           console.log(`Processing ${multiMarkets.length} multi markets...`);
-          for (const marketAddress of multiMarkets) {
-            console.log("Processing multi market:", marketAddress);
+          for (let i = 0; i < multiMarkets.length; i++) {
+            const marketAddress = multiMarkets[i];
+            console.log(
+              "Processing multi market:",
+              marketAddress,
+              "at index:",
+              i
+            );
             if (
               marketAddress &&
               marketAddress !== "0x0000000000000000000000000000000000000000"
@@ -80,7 +95,8 @@ export function useMarketList(
               try {
                 const marketData = await factory.getMarketData(
                   marketAddress,
-                  "multi"
+                  "multi",
+                  i + 1 // Pass the global market ID (1-indexed to match contract)
                 );
                 console.log("Multi market data:", marketData);
                 if (marketData) {
@@ -99,8 +115,14 @@ export function useMarketList(
         // Process scalar markets
         if (scalarMarkets && scalarMarkets.length > 0) {
           console.log(`Processing ${scalarMarkets.length} scalar markets...`);
-          for (const marketAddress of scalarMarkets) {
-            console.log("Processing scalar market:", marketAddress);
+          for (let i = 0; i < scalarMarkets.length; i++) {
+            const marketAddress = scalarMarkets[i];
+            console.log(
+              "Processing scalar market:",
+              marketAddress,
+              "at index:",
+              i
+            );
             if (
               marketAddress &&
               marketAddress !== "0x0000000000000000000000000000000000000000"
@@ -108,7 +130,8 @@ export function useMarketList(
               try {
                 const marketData = await factory.getMarketData(
                   marketAddress,
-                  "scalar"
+                  "scalar",
+                  i + 1 // Pass the global market ID (1-indexed to match contract)
                 );
                 console.log("Scalar market data:", marketData);
                 if (marketData) {
@@ -132,7 +155,7 @@ export function useMarketList(
 
       return allMarkets;
     },
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 1000 * 30, // 30 seconds - shorter cache to ensure fresh data
   });
 }
 
@@ -187,7 +210,8 @@ export function useMarket(marketId: string) {
       // Get on-chain data
       const onChainData = await factory.getMarketData(
         marketAddress,
-        marketType as "binary" | "multi" | "scalar"
+        marketType as "binary" | "multi" | "scalar",
+        marketIdNum // Pass the global market ID for correct curation status
       );
 
       if (!onChainData) {

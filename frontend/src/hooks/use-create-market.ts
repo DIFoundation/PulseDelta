@@ -73,8 +73,8 @@ export function useCreateMarket() {
 
         // Prepare common parameters
         const commonParams = {
-          question: formData.title,
-          metadataURI: formData.description,
+          title: formData.title,
+          description: formData.description,
           creator: "", // Will be set by the wallet
           oracleAdapter: "", // Will be set by getOracleAddress
           feeRouter: "", // Will be set by the factory
@@ -90,8 +90,12 @@ export function useCreateMarket() {
         let hash: string;
 
         // Call appropriate factory function based on market type
-        let marketResult: { hash: string; marketAddress: string; marketId: number };
-        
+        let marketResult: {
+          hash: string;
+          marketAddress: string;
+          marketId: number;
+        };
+
         if (formData.marketType === "binary") {
           marketResult = await createBinaryMarket({
             ...commonParams,
@@ -136,16 +140,30 @@ export function useCreateMarket() {
           action: {
             label: "View Transaction",
             onClick: () =>
-              window.open(`https://etherscan.io/tx/${marketResult.hash}`, "_blank"),
+              window.open(
+                `https://etherscan.io/tx/${marketResult.hash}`,
+                "_blank"
+              ),
           },
         });
 
         // Update Supabase with real contract data
-        await MarketMetadataService.updateWithContractData(
+        console.log("Updating Supabase with contract data:", {
+          metadataId: metadata.id,
+          marketAddress: marketResult.marketAddress,
+          marketId: marketResult.marketId,
+        });
+
+        const updateResult = await MarketMetadataService.updateWithContractData(
           metadata.id,
           marketResult.marketAddress,
           marketResult.marketId
         );
+
+        console.log("Supabase update result:", updateResult);
+
+        // Create the proper market ID format
+        const marketId = `${formData.marketType}:${marketResult.marketId}`;
 
         // Simulate confirmation (in real app, this would be handled by wagmi)
         setTimeout(async () => {
@@ -160,8 +178,8 @@ export function useCreateMarket() {
             action: {
               label: "View Market",
               onClick: () => {
-                // Navigate to market page
-                window.location.href = `/market/${mockMarketId}`;
+                // Navigate to market page with correct format
+                window.location.href = `/market/${marketId}`;
               },
             },
           });

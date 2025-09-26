@@ -27,10 +27,12 @@ export function Navigation() {
   const { isCouncilMember } = useCouncil();
 
   const navItems = [
-    { href: "/", label: "Markets", icon: TrendingUp },
+    { href: "/markets", label: "Markets", icon: TrendingUp },
     { href: "/create", label: "Create", icon: Plus },
     { href: "/lp", label: "Liquidity", icon: Droplets },
-    ...(isCouncilMember ? [{ href: "/council", label: "Council", icon: Shield }] : []),
+    ...(isCouncilMember
+      ? [{ href: "/council", label: "Council", icon: Shield }]
+      : []),
     { href: "/profile", label: "Profile", icon: User },
   ];
 

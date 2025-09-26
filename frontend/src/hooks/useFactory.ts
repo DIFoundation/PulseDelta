@@ -104,7 +104,7 @@ export function useFactory() {
         toastId: "creating-market",
       });
 
-      const hash = await writeContract({
+      writeContract({
         address: CONTRACT_ADDRESSES.binaryFactory as `0x${string}`,
         abi: ABI.binaryFactory,
         functionName: "createBinary",
@@ -124,6 +124,10 @@ export function useFactory() {
         ],
         value: parseEther(params.initialLiquidity),
       });
+
+      if (!hash) {
+        throw new Error("Transaction failed to initiate");
+      }
 
       // Wait for transaction to be mined and get the market address
       const receipt = await waitForTransactionReceipt(config, { hash });
@@ -190,7 +194,7 @@ export function useFactory() {
       // Generate market key from title
       const marketKey = keccak256(stringToBytes(params.title + Date.now()));
 
-      const hash = await writeContract({
+      writeContract({
         address: CONTRACT_ADDRESSES.multiFactory as `0x${string}`,
         abi: ABI.multiFactory,
         functionName: "createMulti",
@@ -211,6 +215,10 @@ export function useFactory() {
         ],
         value: parseEther(params.initialLiquidity),
       });
+
+      if (!hash) {
+        throw new Error("Transaction failed to initiate");
+      }
 
       // Wait for transaction to be mined and get the market address
       const receipt = await waitForTransactionReceipt(config, { hash });
@@ -281,7 +289,7 @@ export function useFactory() {
       // Generate market key from title
       const marketKey = keccak256(stringToBytes(params.title + Date.now()));
 
-      const hash = await writeContract({
+      writeContract({
         address: CONTRACT_ADDRESSES.scalarFactory as `0x${string}`,
         abi: ABI.scalarFactory,
         functionName: "createScalar",
@@ -303,6 +311,10 @@ export function useFactory() {
         ],
         value: parseEther(params.initialLiquidity),
       });
+
+      if (!hash) {
+        throw new Error("Transaction failed to initiate");
+      }
 
       // Wait for transaction to be mined and get the market address
       const receipt = await waitForTransactionReceipt(config, { hash });
@@ -347,29 +359,105 @@ export function useFactory() {
   };
 
   /**
-   * Get market count from factory
+   * Get market count from factory - returns a function that can be called to get count
    */
-  const getMarketCount = (factoryType: "binary" | "multi" | "scalar") => {
-    const factoryAddress =
-      factoryType === "binary"
-        ? CONTRACT_ADDRESSES.binaryFactory
-        : factoryType === "multi"
-        ? CONTRACT_ADDRESSES.multiFactory
-        : CONTRACT_ADDRESSES.scalarFactory;
+  const getMarketCount = useCallback(
+    async (factoryType: "binary" | "multi" | "scalar") => {
+      const factoryAddress = getFactoryAddress(factoryType);
+      if (!factoryAddress) return 0;
 
-    const factoryAbi =
-      factoryType === "binary"
-        ? ABI.binaryFactory
-        : factoryType === "multi"
-        ? ABI.multiFactory
-        : ABI.scalarFactory;
+      try {
+        const result = await readContract(config, {
+          address: factoryAddress as `0x${string}`,
+          abi: getFactoryABI(factoryType),
+          functionName: "marketCount",
+        });
+        return Number(result);
+      } catch (error) {
+        console.error(`Failed to get market count for ${factoryType}:`, error);
+        return 0;
+      }
+    },
+    []
+  );
 
-    return useReadContract({
-      address: factoryAddress as `0x${string}`,
-      abi: factoryAbi,
-      functionName: "marketCount",
-    });
-  };
+  /**
+   * Get all markets from factory
+   */
+  const getAllMarkets = useCallback(
+    async (factoryType: "binary" | "multi" | "scalar") => {
+      console.log(`🔍 Getting all ${factoryType} markets...`);
+      const factoryAddress = getFactoryAddress(factoryType);
+      if (!factoryAddress) {
+        console.log(`❌ No factory address for ${factoryType}`);
+        return [];
+      }
+
+      console.log(`📍 Factory address for ${factoryType}:`, factoryAddress);
+
+      try {
+        console.log(`📞 Calling getAllMarkets on ${factoryType} factory...`);
+        const result = await readContract(config, {
+          address: factoryAddress as `0x${string}`,
+          abi: getFactoryABI(factoryType),
+          functionName: "getAllMarkets",
+        });
+
+        const markets = result as string[];
+        console.log(`✅ getAllMarkets returned for ${factoryType}:`, markets);
+
+        // If getAllMarkets returns empty but we have marketCount > 0, manually build the array
+        if (!markets || markets.length === 0) {
+          console.log(
+            `⚠️ getAllMarkets returned empty for ${factoryType}, trying manual approach...`
+          );
+          const count = await readContract(config, {
+            address: factoryAddress as `0x${string}`,
+            abi: getFactoryABI(factoryType),
+            functionName: "marketCount",
+          });
+
+          console.log(`📊 Market count for ${factoryType}:`, count);
+
+          const manualMarkets: string[] = [];
+          for (let i = 1; i <= Number(count); i++) {
+            try {
+              console.log(`🔍 Getting market ${i} for ${factoryType}...`);
+              const marketAddress = await readContract(config, {
+                address: factoryAddress as `0x${string}`,
+                abi: getFactoryABI(factoryType),
+                functionName: "marketOf",
+                args: [BigInt(i)],
+              });
+              console.log(`📍 Market ${i} address:`, marketAddress);
+              if (
+                marketAddress &&
+                marketAddress !== "0x0000000000000000000000000000000000000000"
+              ) {
+                manualMarkets.push(marketAddress as string);
+              }
+            } catch (error) {
+              console.warn(
+                `⚠️ Failed to get market ${i} for ${factoryType}:`,
+                error
+              );
+            }
+          }
+          console.log(`✅ Manual markets for ${factoryType}:`, manualMarkets);
+          return manualMarkets;
+        }
+
+        return markets;
+      } catch (error) {
+        console.error(
+          `❌ Failed to get all markets for ${factoryType}:`,
+          error
+        );
+        return [];
+      }
+    },
+    []
+  );
 
   /**
    * Get markets by status
@@ -407,12 +495,24 @@ export function useFactory() {
       if (!factoryAddress) return null;
 
       try {
-        const result = await readContract(config, {
-          address: factoryAddress as `0x${string}`,
-          abi: getFactoryABI(type),
-          functionName: "marketOf",
-          args: [BigInt(marketId)],
-        });
+        // Try marketId first, then marketId-1 to handle the offset issue
+        let result;
+        try {
+          result = await readContract(config, {
+            address: factoryAddress as `0x${string}`,
+            abi: getFactoryABI(type),
+            functionName: "marketOf",
+            args: [BigInt(marketId)],
+          });
+        } catch {
+          // If that fails, try marketId + 1 (in case frontend expects 0-based but contract uses 1-based)
+          result = await readContract(config, {
+            address: factoryAddress as `0x${string}`,
+            abi: getFactoryABI(type),
+            functionName: "marketOf",
+            args: [BigInt(marketId + 1)],
+          });
+        }
         return result as string;
       } catch (error) {
         console.error(
@@ -422,32 +522,40 @@ export function useFactory() {
         return null;
       }
     },
-    [readContract]
+    []
   );
 
   // Get market data by address
   const getMarketData = useCallback(
     async (marketAddress: string, type: "binary" | "multi" | "scalar") => {
+      console.log(`📊 Getting market data for ${type} market:`, marketAddress);
       try {
         // Get the appropriate market ABI
         const marketABI = getMarketABI(type);
+        console.log(`📋 Using ABI for ${type}:`, marketABI.length, "functions");
 
         // Read basic market data
+        console.log(`🔍 Reading basic market data...`);
         const [
           question,
+          metadataURI,
           creator,
           marketId,
           startTime,
           endTime,
           liquidity,
           state,
-          outcomes,
         ] = await Promise.all([
           readContract(config, {
             address: marketAddress as `0x${string}`,
             abi: marketABI,
             functionName: "question",
           }).catch(() => "Unknown Question"),
+          readContract(config, {
+            address: marketAddress as `0x${string}`,
+            abi: marketABI,
+            functionName: "metadataURI",
+          }).catch(() => ""),
           readContract(config, {
             address: marketAddress as `0x${string}`,
             abi: marketABI,
@@ -478,21 +586,35 @@ export function useFactory() {
             abi: marketABI,
             functionName: "state",
           }).catch(() => 0),
-          readContract(config, {
-            address: marketAddress as `0x${string}`,
-            abi: marketABI,
-            functionName: "outcomes",
-          }).catch(() => []),
         ]);
+
+        console.log(`✅ Basic data read:`, {
+          question,
+          creator,
+          marketId: (marketId as bigint).toString(),
+          startTime: (startTime as bigint).toString(),
+          endTime: (endTime as bigint).toString(),
+          liquidity: (liquidity as bigint).toString(),
+          state,
+        });
 
         // Determine outcomes based on market type
         let marketOutcomes: string[] = [];
         if (type === "binary") {
-          marketOutcomes = ["Yes", "No"];
+          marketOutcomes = ["Yes", "No"]; // Don't call outcomes() function
         } else if (type === "multi") {
-          marketOutcomes = Array.isArray(outcomes)
-            ? (outcomes as string[])
-            : [];
+          try {
+            const outcomesResult = await readContract(config, {
+              address: marketAddress as `0x${string}`,
+              abi: marketABI,
+              functionName: "outcomes",
+            });
+            marketOutcomes = Array.isArray(outcomesResult)
+              ? outcomesResult
+              : [];
+          } catch {
+            marketOutcomes = ["Unknown"]; // Fallback
+          }
         } else if (type === "scalar") {
           marketOutcomes = ["Long", "Short"];
         }
@@ -506,8 +628,32 @@ export function useFactory() {
           priceChange24h: 0,
         }));
 
-        // Get curation status (default to Pending for new markets)
-        const curationStatus = "Pending" as const; // Would need to read from Curation contract
+        // Get curation status from Curation contract
+        let curationStatus: "Pending" | "Approved" | "Flagged" = "Pending";
+        try {
+          const curationResult = await readContract(config, {
+            address: CONTRACT_ADDRESSES.curation as `0x${string}`,
+            abi: ABI.curation,
+            functionName: "statusOf",
+            args: [BigInt(marketId)],
+          });
+
+          // Convert contract status to our enum
+          if (curationResult === 0) curationStatus = "Pending";
+          else if (curationResult === 1) curationStatus = "Approved";
+          else if (curationResult === 2) curationStatus = "Flagged";
+
+          console.log(
+            `✅ Curation status for ${marketAddress}:`,
+            curationStatus
+          );
+        } catch (error) {
+          console.warn(
+            `⚠️ Failed to get curation status for ${marketAddress}:`,
+            error
+          );
+          // Keep default "Pending" status
+        }
 
         // Convert state number to string
         const stateMap = ["Open", "Closed", "Resolved"] as const;
@@ -515,9 +661,9 @@ export function useFactory() {
 
         // Convert to Market type
         const market: Market = {
-          id: (marketId as bigint).toString(),
+          id: `${type}:${(marketId as bigint).toString()}`,
           title: question as string,
-          description: "", // Would need to read from metadataURI
+          description: metadataURI as string,
           category: "crypto", // Default category - would need to determine from oracle
           outcomes: marketOutcomes,
           outcomeShares,
@@ -541,9 +687,13 @@ export function useFactory() {
           curationStatus: curationStatus,
         };
 
+        console.log(`✅ Market data created for ${type}:`, market);
         return market;
       } catch (error) {
-        console.error(`Failed to get market data for ${marketAddress}:`, error);
+        console.error(
+          `❌ Failed to get market data for ${marketAddress}:`,
+          error
+        );
         return null;
       }
     },
@@ -598,6 +748,7 @@ export function useFactory() {
 
     // Read functions
     getMarketCount,
+    getAllMarkets,
     getMarketsByStatus,
     getMarketAddress,
     getMarketData,

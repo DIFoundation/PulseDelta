@@ -625,14 +625,118 @@ export function useFactory() {
           marketOutcomes = ["Long", "Short"];
         }
 
-        // Create mock outcome shares for now
-        const outcomeShares = marketOutcomes.map((_, index) => ({
-          outcomeIndex: index,
-          price: (1 / marketOutcomes.length).toFixed(3),
-          totalShares: "0",
-          holders: 0,
-          priceChange24h: 0,
-        }));
+        // Read real market data for outcome shares
+        let outcomeShares: any[] = [];
+        let participantCount = 0;
+        let totalVolume = "0";
+
+        try {
+          if (type === "binary") {
+            // Read actual prices for binary market
+            const [yesPrice, noPrice, marketStats] = await Promise.all([
+              readContract(config, {
+                address: marketAddress as `0x${string}`,
+                abi: marketABI,
+                functionName: "price",
+                args: [true], // YES price
+              }).catch(() => BigInt(0)),
+              readContract(config, {
+                address: marketAddress as `0x${string}`,
+                abi: marketABI,
+                functionName: "price",
+                args: [false], // NO price
+              }).catch(() => BigInt(0)),
+              readContract(config, {
+                address: marketAddress as `0x${string}`,
+                abi: marketABI,
+                functionName: "getMarketStats",
+              }).catch(() => [BigInt(0), BigInt(0), BigInt(0), BigInt(0)]),
+            ]);
+
+            // Convert prices from wei to decimal (they're in 1e18 format)
+            const yesPriceDecimal = Number(yesPrice) / 1e18;
+            const noPriceDecimal = Number(noPrice) / 1e18;
+
+            // Extract market stats
+            const [participants, volume, yesReserves, noReserves] = marketStats as [bigint, bigint, bigint, bigint];
+            participantCount = Number(participants);
+            totalVolume = (Number(volume) / 1e18).toString();
+
+            console.log(`📊 Binary market stats:`, {
+              yesPrice: yesPriceDecimal,
+              noPrice: noPriceDecimal,
+              participants: participantCount,
+              volume: totalVolume,
+              yesReserves: Number(yesReserves) / 1e18,
+              noReserves: Number(noReserves) / 1e18,
+            });
+
+            outcomeShares = [
+              {
+                outcomeIndex: 0,
+                price: yesPriceDecimal.toFixed(3),
+                totalShares: (Number(yesReserves) / 1e18).toFixed(3),
+                holders: Math.floor(participantCount / 2), // Rough estimate
+                priceChange24h: 0, // Would need historical data
+              },
+              {
+                outcomeIndex: 1,
+                price: noPriceDecimal.toFixed(3),
+                totalShares: (Number(noReserves) / 1e18).toFixed(3),
+                holders: Math.floor(participantCount / 2), // Rough estimate
+                priceChange24h: 0, // Would need historical data
+              },
+            ];
+          } else if (type === "multi") {
+            // For multi markets, read prices for each outcome
+            const prices = await Promise.all(
+              marketOutcomes.map((_, index) =>
+                readContract(config, {
+                  address: marketAddress as `0x${string}`,
+                  abi: marketABI,
+                  functionName: "price",
+                  args: [index],
+                }).catch(() => BigInt(0))
+              )
+            );
+
+            outcomeShares = marketOutcomes.map((_, index) => ({
+              outcomeIndex: index,
+              price: (Number(prices[index]) / 1e18).toFixed(3),
+              totalShares: "0", // Would need to track this
+              holders: 0, // Would need to track this
+              priceChange24h: 0,
+            }));
+          } else if (type === "scalar") {
+            // For scalar markets, use default prices
+            outcomeShares = [
+              {
+                outcomeIndex: 0,
+                price: "0.500",
+                totalShares: "0",
+                holders: 0,
+                priceChange24h: 0,
+              },
+              {
+                outcomeIndex: 1,
+                price: "0.500",
+                totalShares: "0",
+                holders: 0,
+                priceChange24h: 0,
+              },
+            ];
+          }
+        } catch (error) {
+          console.warn(`⚠️ Failed to read market stats for ${marketAddress}:`, error);
+          // Fallback to mock data
+          outcomeShares = marketOutcomes.map((_, index) => ({
+            outcomeIndex: index,
+            price: (1 / marketOutcomes.length).toFixed(3),
+            totalShares: "0",
+            holders: 0,
+            priceChange24h: 0,
+          }));
+        }
 
         // Get curation status from Curation contract
         let curationStatus: "Pending" | "Approved" | "Flagged" = "Pending";
@@ -719,6 +823,8 @@ export function useFactory() {
               ? globalMarketId
               : (marketId as bigint).toString()
           }`,
+          address: marketAddress, // Add the market address
+          type: type, // Add the market type
           title: question as string,
           description: metadataURI as string,
           category: category,
@@ -730,8 +836,9 @@ export function useFactory() {
           resolved: Number(state) === 2, // State 2 = Resolved
           totalLiquidity: (Number(liquidity) / 1e18).toString(), // Convert from wei
           volume24h: "0", // Would need to track volume
-          volumeTotal: "0",
+          volumeTotal: totalVolume, // Use real volume data
           volume7d: "0", // Would need to track volume
+          participantCount: participantCount, // Use real participant count
           updatedAt: Number(startTime) * 1000, // Use start time as updated time
           priceHistory: [], // Would need to track price history
           metadata: {

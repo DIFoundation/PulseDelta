@@ -24,9 +24,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TagsList } from "@/components/ui/tags";
 import { TradeWidget } from "@/components/TradeWidget";
 import { LiquidityPanel } from "@/components/LiquidityPanel";
+import { ProfitLossDisplay } from "@/components/ProfitLossDisplay";
 import { useMarket } from "@/hooks/useMarket";
 import { formatPrice } from "@/lib/utils";
 import type { Market } from "@/types/market";
+import { WDAGBalance } from "@/components/WDAGBalance";
 import {
   LineChart,
   Line,
@@ -189,18 +191,21 @@ export default function MarketDetail() {
             Back
           </Button>
 
-          <div className="flex items-center gap-2">
-            <Badge
-              variant="outline"
-              className={`${getCategoryColor(
-                market.category
-              )} text-xs px-2 py-1`}
-            >
-              {market.category}
-            </Badge>
-            <Badge variant="secondary" className="text-xs px-2 py-1">
-              {timeLeft > 0 ? "Active" : "Closed"}
-            </Badge>
+          <div className="flex items-center gap-4">
+            <WDAGBalance />
+            <div className="flex items-center gap-2">
+              <Badge
+                variant="outline"
+                className={`${getCategoryColor(
+                  market.category
+                )} text-xs px-2 py-1`}
+              >
+                {market.category}
+              </Badge>
+              <Badge variant="secondary" className="text-xs px-2 py-1">
+                {timeLeft > 0 ? "Active" : "Closed"}
+              </Badge>
+            </div>
           </div>
 
           <Button variant="outline" size="sm" className="glass-card">
@@ -339,10 +344,7 @@ export default function MarketDetail() {
                     </span>
                   </div>
                   <p className="text-lg font-bold">
-                    {market.outcomeShares.reduce(
-                      (sum, outcome) => sum + outcome.holders,
-                      0
-                    )}
+                    {market.participantCount || 0}
                   </p>
                 </CardContent>
               </Card>
@@ -480,6 +482,10 @@ export default function MarketDetail() {
                 formatPrice={formatPrice}
                 onTrade={handleTrade}
               />
+
+              <div className="mt-6">
+                <ProfitLossDisplay market={market as Market} />
+              </div>
 
               <div className="mt-6">
                 <LiquidityPanel market={market as Market} />

@@ -2,7 +2,7 @@
 
 import { useAccount } from "wagmi";
 import { User, Wallet } from "lucide-react";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useUserProfile } from "@/hooks/useUserProfile";
 

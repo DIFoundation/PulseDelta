@@ -1,10 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useReadContract } from "wagmi";
+// import { useReadContract } from "wagmi";
 import { useFactory } from "./useFactory";
 import { MarketMetadataService } from "@/lib/supabase";
-import { CONTRACT_ADDRESSES, ABI } from "@/lib/abiAndAddress";
+// import { CONTRACT_ADDRESSES, ABI } from "@/lib/abiAndAddress";
 import { isMarketCategory } from "@/utils/guard";
-import type { Market, CreateMarketParams, TradeOrder } from "@/types/market";
+import type { Market, CreateMarketParams } from "@/types/market";
 
 /**
  * Hook for fetching market list with pagination and filtering
@@ -252,8 +252,8 @@ export function useTrade(marketId: string) {
 
   const buyMutation = useMutation({
     mutationFn: async ({
-      outcomeIndex,
-      amount,
+      // outcomeIndex,
+      // amount,
     }: {
       outcomeIndex: number;
       amount: string;
@@ -270,8 +270,8 @@ export function useTrade(marketId: string) {
 
   const sellMutation = useMutation({
     mutationFn: async ({
-      outcomeIndex,
-      amount,
+      // outcomeIndex,
+      // amount,
     }: {
       outcomeIndex: number;
       amount: string;
@@ -303,7 +303,7 @@ export function useLiquidity(marketId: string) {
   const queryClient = useQueryClient();
 
   const addMutation = useMutation({
-    mutationFn: async ({ amount }: { amount: string }) => {
+    mutationFn: async ({} : { amount: string }) => {
       // Mock transaction - replace with actual contract call
       await new Promise((resolve) => setTimeout(resolve, 2000));
       return { hash: `0x${"0".repeat(64)}` };
@@ -314,7 +314,7 @@ export function useLiquidity(marketId: string) {
   });
 
   const removeMutation = useMutation({
-    mutationFn: async ({ lpTokens }: { lpTokens: string }) => {
+    mutationFn: async ({ }: { lpTokens: string }) => {
       // Mock transaction - replace with actual contract call
       await new Promise((resolve) => setTimeout(resolve, 2000));
       return { hash: `0x${"0".repeat(64)}` };

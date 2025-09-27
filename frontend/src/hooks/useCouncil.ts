@@ -1,6 +1,5 @@
 import {
   useReadContract,
-  useWriteContract,
   useAccount,
   useWalletClient,
 } from "wagmi";

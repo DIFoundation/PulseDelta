@@ -3,7 +3,7 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
   useReadContract,
-  useReadContracts,
+  // useReadContracts,
   useAccount,
 } from "wagmi";
 import { waitForTransactionReceipt } from "@wagmi/core";
@@ -19,7 +19,6 @@ import type {
   MarketCategory,
   Market,
 } from "@/types/market";
-import { log } from "console";
 
 /**
  * Get the appropriate oracle address based on market category
@@ -133,6 +132,7 @@ export function useFactory() {
       const receipt = await waitForTransactionReceipt(config, { hash });
 
       // Get the market address from the event logs
+      /* eslint-disable-next-line */
       const marketCreatedEvent = receipt.logs.find((log: any) => {
         try {
           const decoded = decodeEventLog({
@@ -153,7 +153,9 @@ export function useFactory() {
           topics: marketCreatedEvent.topics,
         });
 
+        /* eslint-disable-next-line */
         const marketAddress = (decoded.args as any).market;
+        /* eslint-disable-next-line */
         const marketId = (decoded.args as any).marketId;
 
         return {
@@ -224,6 +226,7 @@ export function useFactory() {
       const receipt = await waitForTransactionReceipt(config, { hash });
 
       // Get the market address from the event logs
+      /* eslint-disable-next-line */
       const marketCreatedEvent = receipt.logs.find((log: any) => {
         try {
           const decoded = decodeEventLog({
@@ -244,7 +247,9 @@ export function useFactory() {
           topics: marketCreatedEvent.topics,
         });
 
+        /* eslint-disable-next-line */
         const marketAddress = (decoded.args as any).market;
+        /* eslint-disable-next-line */
         const marketId = (decoded.args as any).marketId;
 
         return {
@@ -320,6 +325,7 @@ export function useFactory() {
       const receipt = await waitForTransactionReceipt(config, { hash });
 
       // Get the market address from the event logs
+      /* eslint-disable-next-line */
       const marketCreatedEvent = receipt.logs.find((log: any) => {
         try {
           const decoded = decodeEventLog({
@@ -340,7 +346,9 @@ export function useFactory() {
           topics: marketCreatedEvent.topics,
         });
 
+        /* eslint-disable-next-line */
         const marketAddress = (decoded.args as any).market;
+        /* eslint-disable-next-line */
         const marketId = (decoded.args as any).marketId;
 
         return {
@@ -462,12 +470,9 @@ export function useFactory() {
   );
 
   /**
-   * Get markets by status
+   * Custom hook: Get markets by status
    */
-  const getMarketsByStatus = (
-    factoryType: "binary" | "multi" | "scalar",
-    status: number
-  ) => {
+  function useMarketsByStatus(factoryType: "binary" | "multi" | "scalar", status: number) {
     const factoryAddress =
       factoryType === "binary"
         ? CONTRACT_ADDRESSES.binaryFactory
@@ -482,13 +487,15 @@ export function useFactory() {
         ? ABI.multiFactory
         : ABI.scalarFactory;
 
-    return useReadContract({
+    const { data, isLoading, isError } = useReadContract({
       address: factoryAddress as `0x${string}`,
       abi: factoryAbi,
       functionName: "getMarketsByStatus",
       args: [BigInt(status)],
     });
-  };
+
+    return { data, isLoading, isError };
+  }
 
   // Get market address by ID
   const getMarketAddress = useCallback(
@@ -753,8 +760,7 @@ export function useFactory() {
         );
         return null;
       }
-    },
-    [readContract]
+    }, []
   );
 
   // Helper functions
@@ -857,7 +863,7 @@ export function useFactory() {
     getMarketCount,
     getAllMarkets,
     getAllMarketsFromAllFactories,
-    getMarketsByStatus,
+  useMarketsByStatus,
     getMarketAddress,
     getMarketData,
 

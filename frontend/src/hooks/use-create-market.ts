@@ -87,7 +87,7 @@ export function useCreateMarket() {
           initialLiquidity: formData.initialLiquidity,
         };
 
-        let hash: string;
+        // let hash: string;
 
         // Call appropriate factory function based on market type
         let marketResult: {
@@ -205,6 +205,7 @@ export function useCreateMarket() {
       }
     },
     [
+      address,
       createBinaryMarket,
       createMultiMarket,
       createScalarMarket,

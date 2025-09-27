@@ -36,10 +36,7 @@ export default function ProfilePage() {
   const { data, isLoading, error } =
     useUserProfile(address);
 
-  const userStats = data;
-  const tradingHistory = data;
-  const lpPositions = data; 
-
+  const { userStats, tradingHistory, lpPositions } = data || {};
 
   if (!isConnected) {
     return (

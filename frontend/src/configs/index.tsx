@@ -1,6 +1,6 @@
 "use client";
 import { defaultWagmiConfig } from "@web3modal/wagmi/react/config";
-
+import { http, createClient } from "viem";
 import { cookieStorage, createStorage } from "wagmi";
 import { blockdagPrimordial } from "@/chains";
 
@@ -27,4 +27,9 @@ export const config = defaultWagmiConfig({
   storage: createStorage({
     storage: cookieStorage,
   }),
+});
+
+export const client = createClient({
+  chain: blockdagPrimordial,
+  transport: http('https://rpc.primordial.bdagscan.com'),
 });

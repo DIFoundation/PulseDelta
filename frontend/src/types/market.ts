@@ -5,6 +5,8 @@
 
 export interface Market {
   id: string;
+  address: string; // Contract address
+  type: "binary" | "multi" | "scalar"; // Market type
   title: string;
   description: string;
   outcomes: string[];
@@ -17,6 +19,7 @@ export interface Market {
   volume24h: string;
   volume7d: string;
   volumeTotal: string;
+  participantCount: number;
   createdAt: number;
   updatedAt: number;
   outcomeShares: OutcomeShares[];

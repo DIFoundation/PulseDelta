@@ -108,7 +108,8 @@ export function useUserProfile(userAddress?: `0x${string}`) {
               args: [userAddress],
             });
 
-            const volume = parseFloat(traderVolume.toString()) / 1e18; // Convert from wei
+            const volume =
+              parseFloat((traderVolume as bigint).toString()) / 1e18; // Convert from wei
             totalVolume += volume;
 
             // Add to trading history (mock data for now - in real implementation,

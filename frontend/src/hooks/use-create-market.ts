@@ -102,8 +102,8 @@ export function useCreateMarket() {
             category: formData.template.category.toLowerCase() as
               | "sports"
               | "crypto"
-              | "trends"
-              | "other",
+              | "trends",
+            outcomes: ["Yes", "No"],
           });
         } else if (formData.marketType === "multi") {
           marketResult = await createMultiMarket({
@@ -111,8 +111,7 @@ export function useCreateMarket() {
             category: formData.template.category.toLowerCase() as
               | "sports"
               | "crypto"
-              | "trends"
-              | "other",
+              | "trends",
             outcomes: formData.outcomes,
           });
         } else if (formData.marketType === "scalar") {
@@ -121,8 +120,8 @@ export function useCreateMarket() {
             category: formData.template.category.toLowerCase() as
               | "sports"
               | "crypto"
-              | "trends"
-              | "other",
+              | "trends",
+            outcomes: ["Long", "Short"],
             minValue: formData.minValue || "0",
             maxValue: formData.maxValue || "1000000",
           });

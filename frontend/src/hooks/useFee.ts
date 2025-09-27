@@ -9,7 +9,7 @@ export function useTradingFee() {
   // Since all markets use the same fee structure, we can use any factory
   // The fee is hardcoded to 100 basis points (1%) in the contracts
   const feeBps = 100; // 1% fee
-  
+
   return {
     feeBps,
     feePercentage: feeBps / 100, // Convert to percentage (1.0%)

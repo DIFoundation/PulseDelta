@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
+// import { useAccount } from "wagmi";
 import { readContract } from "@wagmi/core";
 import { config } from "@/configs";
+// import { CONTRACT_ADDRESSES } from "@/lib/abiAndAddress";
 import { MARKET_ABIS } from "@/lib/marketABIs";
 import { useFactory } from "./useFactory";
 

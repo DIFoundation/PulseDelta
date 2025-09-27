@@ -1,4 +1,8 @@
-import { useReadContract, useAccount, useWalletClient } from "wagmi";
+import {
+  useReadContract,
+  useAccount,
+  useWalletClient,
+} from "wagmi";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { readContract, waitForTransactionReceipt } from "@wagmi/core";
 import { config } from "@/configs";

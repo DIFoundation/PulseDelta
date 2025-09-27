@@ -393,7 +393,8 @@ export function useFeeRouterEvents() {
 
   // Watch Accrued events
   const useAccruedEvent = (
-    onEvent?: (logs: unknown[]) => void,
+    /* eslint-disable-next-line */
+    onEvent?: (logs: any[]) => void,
     options?: {
       market?: Address;
       enabled?: boolean;
@@ -411,7 +412,8 @@ export function useFeeRouterEvents() {
 
   // Watch ClaimedCreator events
   const useClaimedCreatorEvent = (
-    onEvent?: (logs: unknown[]) => void,
+    /* eslint-disable-next-line */
+    onEvent?: (logs: any[]) => void,
     options?: {
       creator?: Address;
       enabled?: boolean;
@@ -429,7 +431,8 @@ export function useFeeRouterEvents() {
 
   // Watch ClaimedProtocol events
   const useClaimedProtocolEvent = (
-    onEvent?: (logs: unknown[]) => void,
+    /* eslint-disable-next-line */
+    onEvent?: (logs: any[]) => void,
     options?: {
       to?: Address;
       enabled?: boolean;
@@ -447,7 +450,8 @@ export function useFeeRouterEvents() {
 
   // Watch CreatorSet events
   const useCreatorSetEvent = (
-    onEvent?: (logs: unknown[]) => void,
+    /* eslint-disable-next-line */
+    onEvent?: (logs: any[]) => void,
     options?: {
       market?: Address;
       creator?: Address;
@@ -472,7 +476,8 @@ export function useFeeRouterEvents() {
 
   // Watch LPFeesAccrued events
   const useLPFeesAccruedEvent = (
-    onEvent?: (logs: unknown[]) => void,
+    /* eslint-disable-next-line */
+    onEvent?: (logs: any[]) => void,
     options?: {
       market?: Address;
       enabled?: boolean;
@@ -491,7 +496,8 @@ export function useFeeRouterEvents() {
   // Watch creator-specific events (claims and creator sets)
   const useMyCreatorEvents = (
     userAddress?: Address,
-    onEvent?: (logs: unknown[]) => void
+    /* eslint-disable-next-line */
+    onEvent?: (logs: any[]) => void
   ) => {
     useClaimedCreatorEvent(onEvent, { creator: userAddress });
     useCreatorSetEvent(onEvent, { creator: userAddress });
@@ -500,7 +506,8 @@ export function useFeeRouterEvents() {
   // Watch market-specific events
   const useMarketEvents = (
     market?: Address,
-    onEvent?: (logs: unknown[]) => void
+    /* eslint-disable-next-line */
+    onEvent?: (logs: any[]) => void
   ) => {
     useAccruedEvent(onEvent, { market });
     useLPFeesAccruedEvent(onEvent, { market });

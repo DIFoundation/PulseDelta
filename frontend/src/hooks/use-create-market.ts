@@ -87,6 +87,8 @@ export function useCreateMarket() {
           initialLiquidity: formData.initialLiquidity,
         };
 
+        // let hash: string;
+
         // Call appropriate factory function based on market type
         let marketResult: {
           hash: string;

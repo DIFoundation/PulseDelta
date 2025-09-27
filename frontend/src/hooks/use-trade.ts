@@ -148,22 +148,23 @@ export function useTrade(marketId: string, outcomeIndex: number) {
           duration: 5000,
         });
 
-        throw error;
-      }
-    },
-    [
-      outcomeIndex,
-      marketState,
-      addToast,
-      startOptimistic,
-      confirmOptimistic,
-      rollbackOptimistic,
-      startTransaction,
-      setTransactionHash,
-      confirmTransaction,
-      failTransaction,
-    ]
-  );
+				throw error
+			}
+		},
+		[
+			// marketId,
+			outcomeIndex,
+			marketState,
+			addToast,
+			startOptimistic,
+			confirmOptimistic,
+			rollbackOptimistic,
+			startTransaction,
+			setTransactionHash,
+			confirmTransaction,
+			failTransaction,
+		]
+	)
 
   const resetTrade = useCallback(() => {
     resetTransaction();

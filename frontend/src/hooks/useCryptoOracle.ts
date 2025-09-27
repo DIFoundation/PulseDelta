@@ -439,7 +439,8 @@ export function useCryptoOracleEvents() {
 
   // Watch Disputed events
   const useDisputedEvent = (
-    onEvent?: (logs: unknown[]) => void,
+    /* eslint-disable-next-line */
+    onEvent?: (logs: any[]) => void,
     options?: {
       marketId?: bigint;
       enabled?: boolean;
@@ -457,7 +458,8 @@ export function useCryptoOracleEvents() {
 
   // Watch FactoryAuthorized events
   const useFactoryAuthorizedEvent = (
-    onEvent?: (logs: unknown[]) => void,
+    /* eslint-disable-next-line */
+    onEvent?: (logs: any[]) => void,
     options?: {
       factory?: Address;
       enabled?: boolean;
@@ -474,7 +476,8 @@ export function useCryptoOracleEvents() {
 
   // Watch Finalized events
   const useFinalizedEvent = (
-    onEvent?: (logs: unknown[]) => void,
+    /* eslint-disable-next-line */
+    onEvent?: (logs: any[]) => void,
     options?: {
       marketId?: bigint;
       enabled?: boolean;
@@ -492,7 +495,8 @@ export function useCryptoOracleEvents() {
 
   // Watch Proposed events
   const useProposedEvent = (
-    onEvent?: (logs: unknown[]) => void,
+    /* eslint-disable-next-line */
+    onEvent?: (logs: any[]) => void,
     options?: {
       marketId?: bigint;
       enabled?: boolean;
@@ -510,7 +514,8 @@ export function useCryptoOracleEvents() {
 
   // Watch ReporterSet events
   const useReporterSetEvent = (
-    onEvent?: (logs: unknown[]) => void,
+    /* eslint-disable-next-line */
+    onEvent?: (logs: any[]) => void,
     options?: {
       reporter?: Address;
       enabled?: boolean;
@@ -528,7 +533,8 @@ export function useCryptoOracleEvents() {
   // Watch market-specific events
   const useMarketEvents = (
     marketId?: bigint,
-    onEvent?: (logs: unknown[]) => void
+    /* eslint-disable-next-line */
+    onEvent?: (logs: any[]) => void
   ) => {
     useProposedEvent(onEvent, { marketId });
     useDisputedEvent(onEvent, { marketId });
@@ -538,7 +544,8 @@ export function useCryptoOracleEvents() {
   // Watch reporter-specific events
   const useReporterEvents = (
     reporter?: Address,
-    onEvent?: (logs: unknown[]) => void
+    /* eslint-disable-next-line */
+    onEvent?: (logs: any[]) => void
   ) => {
     useReporterSetEvent(onEvent, { reporter });
   };

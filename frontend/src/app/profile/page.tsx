@@ -33,8 +33,13 @@ const cardVariants = {
 
 export default function ProfilePage() {
   const { address, isConnected } = useAccount();
-  const { data, isLoading, error } = useUserProfile(address);
-  const { userStats, tradingHistory, lpPositions } = data || {};
+  const { data, isLoading, error } =
+    useUserProfile(address);
+
+  const userStats = data;
+  const tradingHistory = data;
+  const lpPositions = data; 
+
 
   if (!isConnected) {
     return (

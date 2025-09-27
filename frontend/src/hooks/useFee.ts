@@ -1,3 +1,6 @@
+// import { useReadContract } from "wagmi";
+// import { CONTRACT_ADDRESSES, ABI } from "@/lib/abiAndAddress";
+
 /**
  * Hook to get the trading fee from the smart contracts
  * The fee is set to 1% (100 basis points) in all markets

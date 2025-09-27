@@ -296,7 +296,8 @@ export function useBinaryFactoryEvents() {
 
   // Watch MarketCreated events
   const useMarketCreatedEvent = (
-    onEvent?: (logs: unknown[]) => void,
+    /* eslint-disable-next-line */
+    onEvent?: (logs: any[]) => void,
     options?: {
       market?: Address;
       enabled?: boolean;
@@ -316,15 +317,10 @@ export function useBinaryFactoryEvents() {
     onNewMarket?: (market: Address, marketId: bigint) => void
   ) => {
     return useMarketCreatedEvent((logs) => {
-      logs.forEach((log: unknown) => {
-        const logWithArgs = log as {
-          args?: { market?: string; marketId?: bigint };
-        };
-        if (logWithArgs.args?.market && logWithArgs.args?.marketId) {
-          onNewMarket?.(
-            logWithArgs.args.market as `0x${string}`,
-            logWithArgs.args.marketId
-          );
+      /* eslint-disable-next-line */
+      logs.forEach((log: any) => {
+        if (log.args?.market && log.args?.marketId) {
+          onNewMarket?.(log.args.market, log.args.marketId);
         }
       });
     });

@@ -3,6 +3,7 @@
 import type React from "react";
 import { motion } from "framer-motion";
 import { CheckCircle, Target, BarChart3, TrendingUp } from "lucide-react";
+// import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -107,7 +108,7 @@ export function MarketTypeSelection({
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Example:</h4>
                   <p className="text-sm text-muted-foreground italic">
-                    &quot;{type.example}&quot;
+                  &quot;{type.example}&quot;
                   </p>
                 </div>
 

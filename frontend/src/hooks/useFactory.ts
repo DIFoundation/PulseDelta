@@ -2,6 +2,8 @@ import React from "react";
 import {
   useWriteContract,
   useWaitForTransactionReceipt,
+  useReadContract,
+  // useReadContracts,
   useAccount,
 } from "wagmi";
 import { waitForTransactionReceipt } from "@wagmi/core";
@@ -131,7 +133,8 @@ export function useFactory() {
       const receipt = await waitForTransactionReceipt(config, { hash });
 
       // Get the market address from the event logs
-      const marketCreatedEvent = receipt.logs.find((log: unknown) => {
+      /* eslint-disable-next-line */
+      const marketCreatedEvent = receipt.logs.find((log: any) => {
         try {
           const decoded = decodeEventLog({
             abi: ABI.binaryFactory,
@@ -155,11 +158,10 @@ export function useFactory() {
             .topics as [signature: `0x${string}`, ...args: `0x${string}`[]],
         });
 
-        const marketAddress = (
-          decoded.args as unknown as { market: `0x${string}` }
-        ).market;
-        const marketId = (decoded.args as unknown as { marketId: bigint })
-          .marketId;
+        /* eslint-disable-next-line */
+        const marketAddress = (decoded.args as any).market;
+        /* eslint-disable-next-line */
+        const marketId = (decoded.args as any).marketId;
 
         return {
           hash,
@@ -229,7 +231,8 @@ export function useFactory() {
       const receipt = await waitForTransactionReceipt(config, { hash });
 
       // Get the market address from the event logs
-      const marketCreatedEvent = receipt.logs.find((log: unknown) => {
+      /* eslint-disable-next-line */
+      const marketCreatedEvent = receipt.logs.find((log: any) => {
         try {
           const decoded = decodeEventLog({
             abi: ABI.multiFactory,
@@ -253,11 +256,10 @@ export function useFactory() {
             .topics as [signature: `0x${string}`, ...args: `0x${string}`[]],
         });
 
-        const marketAddress = (
-          decoded.args as unknown as { market: `0x${string}` }
-        ).market;
-        const marketId = (decoded.args as unknown as { marketId: bigint })
-          .marketId;
+        /* eslint-disable-next-line */
+        const marketAddress = (decoded.args as any).market;
+        /* eslint-disable-next-line */
+        const marketId = (decoded.args as any).marketId;
 
         return {
           hash,
@@ -332,7 +334,8 @@ export function useFactory() {
       const receipt = await waitForTransactionReceipt(config, { hash });
 
       // Get the market address from the event logs
-      const marketCreatedEvent = receipt.logs.find((log: unknown) => {
+      /* eslint-disable-next-line */
+      const marketCreatedEvent = receipt.logs.find((log: any) => {
         try {
           const decoded = decodeEventLog({
             abi: ABI.scalarFactory,
@@ -355,11 +358,10 @@ export function useFactory() {
           topics: marketCreatedEvent.topics,
         });
 
-        const marketAddress = (
-          decoded.args as unknown as { market: `0x${string}` }
-        ).market;
-        const marketId = (decoded.args as unknown as { marketId: bigint })
-          .marketId;
+        /* eslint-disable-next-line */
+        const marketAddress = (decoded.args as any).market;
+        /* eslint-disable-next-line */
+        const marketId = (decoded.args as any).marketId;
 
         return {
           hash,
@@ -480,12 +482,9 @@ export function useFactory() {
   );
 
   /**
-   * Get markets by status
+   * Custom hook: Get markets by status
    */
-  const getMarketsByStatus = (
-    factoryType: "binary" | "multi" | "scalar",
-    status: number
-  ) => {
+  function useMarketsByStatus(factoryType: "binary" | "multi" | "scalar", status: number) {
     const factoryAddress =
       factoryType === "binary"
         ? CONTRACT_ADDRESSES.binaryFactory
@@ -500,13 +499,15 @@ export function useFactory() {
         ? ABI.multiFactory
         : ABI.scalarFactory;
 
-    return readContract(config, {
+    const { data, isLoading, isError } = useReadContract({
       address: factoryAddress as `0x${string}`,
       abi: factoryAbi,
       functionName: "getMarketsByStatus",
       args: [BigInt(status)],
     });
-  };
+
+    return { data, isLoading, isError };
+  }
 
   // Get market address by ID
   const getMarketAddress = useCallback(
@@ -882,8 +883,7 @@ export function useFactory() {
         );
         return null;
       }
-    },
-    []
+    }, []
   );
 
   // Helper functions
@@ -986,7 +986,7 @@ export function useFactory() {
     getMarketCount,
     getAllMarkets,
     getAllMarketsFromAllFactories,
-    getMarketsByStatus,
+  useMarketsByStatus,
     getMarketAddress,
     getMarketData,
 

@@ -141,7 +141,7 @@ export function useTrade(marketId: string, outcomeIndex: number) {
 			}
 		},
 		[
-			marketId,
+			// marketId,
 			outcomeIndex,
 			marketState,
 			addToast,

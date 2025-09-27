@@ -5,20 +5,26 @@ import { useMultiOutcomeTrade } from './useMultiOutcomeTrade';
 
 export function useMarketTrade(marketId: string, outcomeIndex?: number) {
   const [marketType] = marketId.split(':');
-  
-  // Initialize the appropriate trade hook based on market type
-  const tradeHook = (() => {
-    switch(marketType) {
-      case 'binary':
-        return useBinaryTrade(marketId);
-      case 'scalar':
-        return useScalarTrade(marketId);
-      case 'multi':
-        return useMultiOutcomeTrade(marketId, outcomeIndex || 0);
-      default:
-        throw new Error(`Unsupported market type: ${marketType}`);
-    }
-  })();
+
+  // Call all hooks unconditionally
+  const binaryTrade = useBinaryTrade(marketId);
+  const scalarTrade = useScalarTrade(marketId);
+  const multiOutcomeTrade = useMultiOutcomeTrade(marketId, outcomeIndex || 0);
+
+  let tradeHook;
+  switch (marketType) {
+    case 'binary':
+      tradeHook = binaryTrade;
+      break;
+    case 'scalar':
+      tradeHook = scalarTrade;
+      break;
+    case 'multi':
+      tradeHook = multiOutcomeTrade;
+      break;
+    default:
+      throw new Error(`Unsupported market type: ${marketType}`);
+  }
 
   return {
     ...tradeHook,

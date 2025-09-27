@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAccount } from "wagmi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,8 +15,6 @@ import {
   Award,
   Activity,
   BarChart3,
-  Clock,
-  Users,
   Plus,
 } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -35,8 +32,13 @@ const cardVariants = {
 
 export default function ProfilePage() {
   const { address, isConnected } = useAccount();
-  const { userStats, tradingHistory, lpPositions, isLoading, error } =
+  const { data, isLoading, error } =
     useUserProfile(address);
+
+  const userStats = data;
+  const tradingHistory = data;
+  const lpPositions = data; 
+
 
   if (!isConnected) {
     return (

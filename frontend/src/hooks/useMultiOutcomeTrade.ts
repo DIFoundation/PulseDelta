@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useAccount, useReadContract, useWriteContract } from 'wagmi';
+import { useAccount, useWriteContract } from 'wagmi';
 import { parseUnits } from 'viem';
 import { CONTRACT_ADDRESSES, ABI } from '../lib/abiAndAddress';
 import { useToast } from './use-toast';
@@ -9,7 +9,7 @@ import { readContract } from 'viem/actions';
 export function useMultiOutcomeTrade(marketId: string, outcomeIndex: number) {
   const { address } = useAccount();
   const { writeContract } = useWriteContract();
-  const { addToast } = useToast();
+  const { toast } = useToast();
 
   const checkAllowance = useCallback(async (amount: string): Promise<boolean> => {
     if (!address) return false;
@@ -59,12 +59,12 @@ export function useMultiOutcomeTrade(marketId: string, outcomeIndex: number) {
       args: [outcomeIndex, shares],
     });
     
-    addToast({
+    toast({
       title: 'Order Submitted',
       description: `Bought ${amount} shares of outcome ${outcomeIndex + 1}`,
       type: 'success',
     });
-  }, [address, marketId, outcomeIndex, writeContract, addToast]);
+  }, [address, marketId, outcomeIndex, writeContract, toast]);
 
   const sell = useCallback(async (amount: string) => {
     if (!address) throw new Error('Connect wallet to trade');
@@ -79,12 +79,12 @@ export function useMultiOutcomeTrade(marketId: string, outcomeIndex: number) {
       args: [outcomeIndex, shares],
     });
     
-    addToast({
+    toast({
       title: 'Order Submitted',
       description: `Sold ${amount} shares of outcome ${outcomeIndex + 1}`,
       type: 'success',
     });
-  }, [address, marketId, outcomeIndex, writeContract, addToast]);
+  }, [address, marketId, outcomeIndex, writeContract, toast]);
 
   return {
     checkAllowance,
@@ -94,7 +94,7 @@ export function useMultiOutcomeTrade(marketId: string, outcomeIndex: number) {
   };
 }
 
-async function getMarketAddress(marketId: string): Promise<`0x${string}`> {
-  // TODO: Implement market address resolution from factory
-  return '0x0000000000000000000000000000000000000000' as const;
-}
+// async function getMarketAddress(marketId: string): Promise<`0x${string}`> {
+//   // TODO: Implement market address resolution from factory
+//   return '0x0000000000000000000000000000000000000000' as const;
+// }

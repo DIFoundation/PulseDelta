@@ -372,6 +372,7 @@ export function useSportsOracleEvents() {
 
   // Watch Disputed events
   const useDisputedEvent = (
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void,
     options?: {
       marketId?: bigint;
@@ -390,6 +391,7 @@ export function useSportsOracleEvents() {
 
   // Watch FactoryAuthorized events
   const useFactoryAuthorizedEvent = (
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void,
     options?: {
       factory?: Address;
@@ -407,6 +409,7 @@ export function useSportsOracleEvents() {
 
   // Watch Finalized events
   const useFinalizedEvent = (
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void,
     options?: {
       marketId?: bigint;
@@ -425,6 +428,7 @@ export function useSportsOracleEvents() {
 
   // Watch Proposed events
   const useProposedEvent = (
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void,
     options?: {
       marketId?: bigint;
@@ -443,6 +447,7 @@ export function useSportsOracleEvents() {
 
   // Watch ReporterSet events
   const useReporterSetEvent = (
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void,
     options?: {
       reporter?: Address;
@@ -461,6 +466,7 @@ export function useSportsOracleEvents() {
   // Watch market-specific events
   const useMarketEvents = (
     marketId?: bigint,
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void
   ) => {
     useProposedEvent(onEvent, { marketId });
@@ -471,6 +477,7 @@ export function useSportsOracleEvents() {
   // Watch reporter-specific events
   const useReporterEvents = (
     reporter?: Address,
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void
   ) => {
     useReporterSetEvent(onEvent, { reporter });

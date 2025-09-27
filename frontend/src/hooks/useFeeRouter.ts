@@ -381,6 +381,7 @@ export function useFeeRouterEvents() {
 
   // Watch Accrued events
   const useAccruedEvent = (
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void,
     options?: {
       market?: Address;
@@ -399,6 +400,7 @@ export function useFeeRouterEvents() {
 
   // Watch ClaimedCreator events
   const useClaimedCreatorEvent = (
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void,
     options?: {
       creator?: Address;
@@ -417,6 +419,7 @@ export function useFeeRouterEvents() {
 
   // Watch ClaimedProtocol events
   const useClaimedProtocolEvent = (
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void,
     options?: {
       to?: Address;
@@ -435,6 +438,7 @@ export function useFeeRouterEvents() {
 
   // Watch CreatorSet events
   const useCreatorSetEvent = (
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void,
     options?: {
       market?: Address;
@@ -457,6 +461,7 @@ export function useFeeRouterEvents() {
 
   // Watch LPFeesAccrued events
   const useLPFeesAccruedEvent = (
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void,
     options?: {
       market?: Address;
@@ -476,6 +481,7 @@ export function useFeeRouterEvents() {
   // Watch creator-specific events (claims and creator sets)
   const useMyCreatorEvents = (
     userAddress?: Address,
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void
   ) => {
     useClaimedCreatorEvent(onEvent, { creator: userAddress });
@@ -485,6 +491,7 @@ export function useFeeRouterEvents() {
   // Watch market-specific events
   const useMarketEvents = (
     market?: Address,
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void
   ) => {
     useAccruedEvent(onEvent, { market });

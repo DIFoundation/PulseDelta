@@ -1,7 +1,13 @@
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useWatchContractEvent, useAccount } from 'wagmi';
-import { Address } from 'viem';
-import { CONTRACT_ADDRESSES } from '@/lib/abiAndAddress';
-import { ABI } from '@/lib/abiAndAddress';
+import {
+  useReadContract,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  useWatchContractEvent,
+  useAccount,
+} from "wagmi";
+import { Address } from "viem";
+import { CONTRACT_ADDRESSES } from "@/lib/abiAndAddress";
+import { ABI } from "@/lib/abiAndAddress";
 
 // Types
 enum Status {
@@ -9,7 +15,7 @@ enum Status {
   PROPOSED = 1,
   DISPUTED = 2,
   FINALIZED = 3,
-  INVALID = 4
+  INVALID = 4,
 }
 
 enum Outcome {
@@ -17,7 +23,7 @@ enum Outcome {
   HOME_WIN = 1,
   AWAY_WIN = 2,
   DRAW = 3,
-  CANCELLED = 4
+  CANCELLED = 4,
 }
 
 interface SportsProposal {
@@ -40,46 +46,51 @@ interface SportsResult {
 // Contract function signatures (hashes)
 export const FUNCTION_SIGNATURES = {
   // Read functions
-  authorizedFactories: '0x7e4e1c3d',
-  collateral: '0xd8dfeb45',
-  council: '0x2c2d72b4',
-  disputerBond: '0x5b16ebb7',
-  getResult: '0xde292789',
-  isReporter: '0x47d5ce23',
-  liveness: '0x8b3f7c91',
-  marketAddress: '0x2c40d590',
-  proposals: '0x9a3b2556',
-  reporterBond: '0x8fa1c4e4',
-  
+  authorizedFactories: "0x7e4e1c3d",
+  collateral: "0xd8dfeb45",
+  council: "0x2c2d72b4",
+  disputerBond: "0x5b16ebb7",
+  getResult: "0xde292789",
+  isReporter: "0x47d5ce23",
+  liveness: "0x8b3f7c91",
+  marketAddress: "0x2c40d590",
+  proposals: "0x9a3b2556",
+  reporterBond: "0x8fa1c4e4",
+
   // Write functions
-  arbitrate: '0x3c8f2d7b',
-  dispute: '0x2a6c9b4d',
-  finalize: '0x4bb278f3',
-  invalidate: '0xbf1fe420',
-  proposeResult: '0x5e8d5c7a',
-  setFactory: '0x5b16ebb7',
-  setMarketAddress: '0x1c4e6d8f',
-  setReporter: '0x9a1b2c3d',
+  arbitrate: "0x3c8f2d7b",
+  dispute: "0x2a6c9b4d",
+  finalize: "0x4bb278f3",
+  invalidate: "0xbf1fe420",
+  proposeResult: "0x5e8d5c7a",
+  setFactory: "0x5b16ebb7",
+  setMarketAddress: "0x1c4e6d8f",
+  setReporter: "0x9a1b2c3d",
 };
 
 // Event signatures (topic hashes)
 export const EVENT_SIGNATURES = {
-  Disputed: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b',
-  FactoryAuthorized: '0x2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c',
-  Finalized: '0x3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d',
-  Proposed: '0x4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e',
-  ReporterSet: '0x5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f',
+  Disputed:
+    "0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+  FactoryAuthorized:
+    "0x2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c",
+  Finalized:
+    "0x3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d",
+  Proposed:
+    "0x4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e",
+  ReporterSet:
+    "0x5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f",
 };
 
 // Error signatures
 export const ERROR_SIGNATURES = {
-  BadState: '0x65c87992',
-  Exists: '0x2b2c1b6b',
-  Liveness: '0x8b14e234',
-  NotAuthorized: '0x4ca88867',
-  NotCouncil: '0x1e4fbdf7',
-  NotWhitelisted: '0x5b5c9d8e',
-  TooEarly: '0x6f5e8e24',
+  BadState: "0x65c87992",
+  Exists: "0x2b2c1b6b",
+  Liveness: "0x8b14e234",
+  NotAuthorized: "0x4ca88867",
+  NotCouncil: "0x1e4fbdf7",
+  NotWhitelisted: "0x5b5c9d8e",
+  TooEarly: "0x6f5e8e24",
 };
 
 export function useSportsOracleGetters() {
@@ -92,7 +103,7 @@ export function useSportsOracleGetters() {
     return useReadContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'authorizedFactories',
+      functionName: "authorizedFactories",
       args: factory ? [factory] : undefined,
       query: {
         enabled: !!factory,
@@ -105,7 +116,7 @@ export function useSportsOracleGetters() {
     return useReadContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'collateral',
+      functionName: "collateral",
     });
   };
 
@@ -114,7 +125,7 @@ export function useSportsOracleGetters() {
     return useReadContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'council',
+      functionName: "council",
     });
   };
 
@@ -123,7 +134,7 @@ export function useSportsOracleGetters() {
     return useReadContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'disputerBond',
+      functionName: "disputerBond",
     });
   };
 
@@ -132,13 +143,13 @@ export function useSportsOracleGetters() {
     return useReadContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'getResult',
+      functionName: "getResult",
       args: marketId !== undefined ? [marketId] : undefined,
       query: {
         enabled: marketId !== undefined,
       },
-    }) as ReturnType<typeof useReadContract> & { 
-      data?: [number, string] 
+    }) as ReturnType<typeof useReadContract> & {
+      data?: [number, string];
     };
   };
 
@@ -147,7 +158,7 @@ export function useSportsOracleGetters() {
     return useReadContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'isReporter',
+      functionName: "isReporter",
       args: reporter ? [reporter] : undefined,
       query: {
         enabled: !!reporter,
@@ -160,7 +171,7 @@ export function useSportsOracleGetters() {
     return useReadContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'liveness',
+      functionName: "liveness",
     });
   };
 
@@ -169,7 +180,7 @@ export function useSportsOracleGetters() {
     return useReadContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'marketAddress',
+      functionName: "marketAddress",
       args: marketId !== undefined ? [marketId] : undefined,
       query: {
         enabled: marketId !== undefined,
@@ -182,13 +193,23 @@ export function useSportsOracleGetters() {
     return useReadContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'proposals',
+      functionName: "proposals",
       args: marketId !== undefined ? [marketId] : undefined,
       query: {
         enabled: marketId !== undefined,
       },
-    }) as ReturnType<typeof useReadContract> & { 
-      data?: [number, Address, Address, number, string, bigint, bigint, bigint, number] 
+    }) as ReturnType<typeof useReadContract> & {
+      data?: [
+        number,
+        Address,
+        Address,
+        number,
+        string,
+        bigint,
+        bigint,
+        bigint,
+        number
+      ];
     };
   };
 
@@ -197,7 +218,7 @@ export function useSportsOracleGetters() {
     return useReadContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'reporterBond',
+      functionName: "reporterBond",
     });
   };
 
@@ -224,15 +245,32 @@ export function useSportsOracleGetters() {
     const council = useCouncil();
 
     return {
-      data: collateral.data && reporterBond.data && disputerBond.data && liveness.data && council.data ? {
-        collateral: collateral.data as Address,
-        reporterBond: reporterBond.data as bigint,
-        disputerBond: disputerBond.data as bigint,
-        liveness: liveness.data as bigint,
-        council: council.data as Address,
-      } : undefined,
-      isLoading: collateral.isLoading || reporterBond.isLoading || disputerBond.isLoading || liveness.isLoading || council.isLoading,
-      error: collateral.error || reporterBond.error || disputerBond.error || liveness.error || council.error,
+      data:
+        collateral.data &&
+        reporterBond.data &&
+        disputerBond.data &&
+        liveness.data &&
+        council.data
+          ? {
+              collateral: collateral.data as Address,
+              reporterBond: reporterBond.data as bigint,
+              disputerBond: disputerBond.data as bigint,
+              liveness: liveness.data as bigint,
+              council: council.data as Address,
+            }
+          : undefined,
+      isLoading:
+        collateral.isLoading ||
+        reporterBond.isLoading ||
+        disputerBond.isLoading ||
+        liveness.isLoading ||
+        council.isLoading,
+      error:
+        collateral.error ||
+        reporterBond.error ||
+        disputerBond.error ||
+        liveness.error ||
+        council.error,
     };
   };
 
@@ -260,16 +298,21 @@ export function useSportsOracleSetters() {
   const { writeContract, data: hash, error, isPending } = useWriteContract();
 
   // Wait for transaction confirmation
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-    hash,
-  });
+  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({
+      hash,
+    });
 
   // Arbitrate a dispute (council only)
-  const arbitrate = (marketId: bigint, outcome: Outcome, reporterWins: boolean) => {
+  const arbitrate = (
+    marketId: bigint,
+    outcome: Outcome,
+    reporterWins: boolean
+  ) => {
     writeContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'arbitrate',
+      functionName: "arbitrate",
       args: [marketId, outcome, reporterWins],
     });
   };
@@ -279,7 +322,7 @@ export function useSportsOracleSetters() {
     writeContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'dispute',
+      functionName: "dispute",
       args: [marketId, evidenceCID],
       value,
     });
@@ -290,7 +333,7 @@ export function useSportsOracleSetters() {
     writeContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'finalize',
+      functionName: "finalize",
       args: [marketId],
     });
   };
@@ -300,17 +343,22 @@ export function useSportsOracleSetters() {
     writeContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'invalidate',
+      functionName: "invalidate",
       args: [marketId],
     });
   };
 
   // Propose a result
-  const proposeResult = (marketId: bigint, payload: string, evidenceCID: string, value?: bigint) => {
+  const proposeResult = (
+    marketId: bigint,
+    payload: string,
+    evidenceCID: string,
+    value?: bigint
+  ) => {
     writeContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'proposeResult',
+      functionName: "proposeResult",
       args: [marketId, payload, evidenceCID],
       value,
     });
@@ -321,7 +369,7 @@ export function useSportsOracleSetters() {
     writeContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'setFactory',
+      functionName: "setFactory",
       args: [factory, enabled],
     });
   };
@@ -331,7 +379,7 @@ export function useSportsOracleSetters() {
     writeContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'setMarketAddress',
+      functionName: "setMarketAddress",
       args: [marketId, market],
     });
   };
@@ -341,7 +389,7 @@ export function useSportsOracleSetters() {
     writeContract({
       address: sportsOracle as Address,
       abi,
-      functionName: 'setReporter',
+      functionName: "setReporter",
       args: [reporter, enabled],
     });
   };
@@ -382,7 +430,7 @@ export function useSportsOracleEvents() {
     return useWatchContractEvent({
       address: sportsOracle as Address,
       abi,
-      eventName: 'Disputed',
+      eventName: "Disputed",
       args: options?.marketId ? { marketId: options.marketId } : undefined,
       onLogs: onEvent,
       enabled: options?.enabled !== false,
@@ -401,7 +449,7 @@ export function useSportsOracleEvents() {
     return useWatchContractEvent({
       address: sportsOracle as Address,
       abi,
-      eventName: 'FactoryAuthorized',
+      eventName: "FactoryAuthorized",
       onLogs: onEvent,
       enabled: options?.enabled !== false,
     });
@@ -419,7 +467,7 @@ export function useSportsOracleEvents() {
     return useWatchContractEvent({
       address: sportsOracle as Address,
       abi,
-      eventName: 'Finalized',
+      eventName: "Finalized",
       args: options?.marketId ? { marketId: options.marketId } : undefined,
       onLogs: onEvent,
       enabled: options?.enabled !== false,
@@ -438,7 +486,7 @@ export function useSportsOracleEvents() {
     return useWatchContractEvent({
       address: sportsOracle as Address,
       abi,
-      eventName: 'Proposed',
+      eventName: "Proposed",
       args: options?.marketId ? { marketId: options.marketId } : undefined,
       onLogs: onEvent,
       enabled: options?.enabled !== false,
@@ -457,7 +505,7 @@ export function useSportsOracleEvents() {
     return useWatchContractEvent({
       address: sportsOracle as Address,
       abi,
-      eventName: 'ReporterSet',
+      eventName: "ReporterSet",
       onLogs: onEvent,
       enabled: options?.enabled !== false,
     });
@@ -503,13 +551,13 @@ export function useSportsOracle() {
   return {
     // Getters
     ...getters,
-    
+
     // Setters
     ...setters,
-    
+
     // Events
     ...events,
-    
+
     // Constants
     functionSignatures: FUNCTION_SIGNATURES,
     eventSignatures: EVENT_SIGNATURES,
@@ -533,8 +581,30 @@ export const useSportsOracleUtils = () => {
     return /^0x[a-fA-F0-9]{40}$/.test(address);
   };
 
-  const formatSportsProposal = (proposal: [number, Address, Address, number, string, bigint, bigint, bigint, number]): SportsProposal => {
-    const [status, reporter, disputer, proposedOutcome, evidenceCID, timestamp, reporterBondPaid, disputerBondPaid, finalOutcome] = proposal;
+  const formatSportsProposal = (
+    proposal: [
+      number,
+      Address,
+      Address,
+      number,
+      string,
+      bigint,
+      bigint,
+      bigint,
+      number
+    ]
+  ): SportsProposal => {
+    const [
+      status,
+      reporter,
+      disputer,
+      proposedOutcome,
+      evidenceCID,
+      timestamp,
+      reporterBondPaid,
+      disputerBondPaid,
+      finalOutcome,
+    ] = proposal;
     return {
       status,
       reporter,
@@ -556,34 +626,34 @@ export const useSportsOracleUtils = () => {
   const getStatusString = (status: Status) => {
     switch (status) {
       case Status.UNKNOWN:
-        return 'Unknown';
+        return "Unknown";
       case Status.PROPOSED:
-        return 'Proposed';
+        return "Proposed";
       case Status.DISPUTED:
-        return 'Disputed';
+        return "Disputed";
       case Status.FINALIZED:
-        return 'Finalized';
+        return "Finalized";
       case Status.INVALID:
-        return 'Invalid';
+        return "Invalid";
       default:
-        return 'Unknown';
+        return "Unknown";
     }
   };
 
   const getOutcomeString = (outcome: Outcome) => {
     switch (outcome) {
       case Outcome.UNDECIDED:
-        return 'Undecided';
+        return "Undecided";
       case Outcome.HOME_WIN:
-        return 'Home Win';
+        return "Home Win";
       case Outcome.AWAY_WIN:
-        return 'Away Win';
+        return "Away Win";
       case Outcome.DRAW:
-        return 'Draw';
+        return "Draw";
       case Outcome.CANCELLED:
-        return 'Cancelled';
+        return "Cancelled";
       default:
-        return 'Unknown';
+        return "Unknown";
     }
   };
 
@@ -601,7 +671,7 @@ export const useSportsOracleUtils = () => {
 
   const encodeOutcome = (outcome: Outcome): string => {
     // Convert outcome enum to bytes for payload
-    return '0x' + outcome.toString(16).padStart(2, '0');
+    return "0x" + outcome.toString(16).padStart(2, "0");
   };
 
   const decodeOutcome = (payload: string): Outcome => {

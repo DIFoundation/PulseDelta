@@ -16,10 +16,10 @@ interface CouncilAccessGuardProps {
  */
 export function CouncilAccessGuard({ children }: CouncilAccessGuardProps) {
   const { isConnected } = useAccount();
-  const { isCouncilMember, isLoadingPending } = useCouncil();
+  const { isCouncilMember, isLoadingMarkets } = useCouncil();
 
   // Show loading state while checking council membership
-  if (isLoadingPending) {
+  if (isLoadingMarkets) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 flex items-center justify-center">
         <Card className="w-full max-w-md">

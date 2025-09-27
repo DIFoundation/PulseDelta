@@ -20,13 +20,6 @@ const actionTypes = {
   REMOVE_TOAST: "REMOVE_TOAST",
 } as const;
 
-let count = 0;
-
-function genId() {
-  count = (count + 1) % Number.MAX_SAFE_INTEGER;
-  return count.toString();
-}
-
 type ActionType = typeof actionTypes;
 
 type Action =
@@ -80,7 +73,9 @@ export const reducer = (state: State, action: Action): State => {
     case "UPDATE_TOAST":
       return {
         ...state,
-        toasts: state.toasts.map((t) => (t.id === action.toast.id ? { ...t, ...action.toast } : t)),
+        toasts: state.toasts.map((t) =>
+          t.id === action.toast.id ? { ...t, ...action.toast } : t
+        ),
       };
 
     case "DISMISS_TOAST": {
@@ -104,7 +99,7 @@ export const reducer = (state: State, action: Action): State => {
                 ...t,
                 open: false,
               }
-            : t,
+            : t
         ),
       };
     }
@@ -134,6 +129,11 @@ function dispatch(action: Action) {
 }
 
 type Toast = Omit<ToasterToast, "id">;
+
+// Add this near the top of your file, before any usage of genId
+function genId() {
+  return Math.random().toString(36).substr(2, 9);
+}
 
 function toast({ ...props }: Toast) {
   const id = genId();

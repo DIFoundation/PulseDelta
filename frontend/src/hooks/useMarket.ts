@@ -214,6 +214,10 @@ export function useMarket(marketId: string) {
         marketIdNum // Pass the global market ID for correct curation status
       );
 
+      console.log("useMarket - onChainData:", onChainData);
+      console.log("useMarket - onChainData.address:", onChainData?.address);
+      console.log("useMarket - onChainData.type:", onChainData?.type);
+
       if (!onChainData) {
         throw new Error("Failed to fetch market data");
       }

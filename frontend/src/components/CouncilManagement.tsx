@@ -44,10 +44,7 @@ export function CouncilManagement() {
     }
 
     try {
-      await setCouncilMember({
-        address: newMemberAddress,
-        enabled: isAdding,
-      });
+      await setCouncilMember(newMemberAddress, isAdding);
 
       toast.success(
         isAdding

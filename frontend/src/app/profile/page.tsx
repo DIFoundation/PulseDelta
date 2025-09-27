@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { formatPrice } from "@/lib/utils";
+import { FeeEarningsDisplay } from "@/components/FeeEarningsDisplay";
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -35,10 +36,7 @@ export default function ProfilePage() {
   const { data, isLoading, error } =
     useUserProfile(address);
 
-  const userStats = data;
-  const tradingHistory = data;
-  const lpPositions = data; 
-
+  const { userStats, tradingHistory, lpPositions } = data || {};
 
   if (!isConnected) {
     return (
@@ -368,13 +366,23 @@ export default function ProfilePage() {
         </motion.div>
       )}
 
+      {/* Fee Earnings */}
+      <motion.div
+        variants={itemVariants}
+        initial="hidden"
+        animate="visible"
+        transition={{ delay: 0.5 }}
+      >
+        <FeeEarningsDisplay />
+      </motion.div>
+
       {/* Join Date */}
       {stats.joinDate && (
         <motion.div
           variants={itemVariants}
           initial="hidden"
           animate="visible"
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.6 }}
         >
           <Card>
             <CardContent className="p-6">

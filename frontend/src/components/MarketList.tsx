@@ -109,7 +109,7 @@ export function MarketList({
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
           {Array.from({ length: 6 }).map((_, index) => (
             <div key={index} className="glass-card p-6 animate-pulse">
               <div className="h-4 bg-muted rounded mb-2"></div>
@@ -133,7 +133,7 @@ export function MarketList({
   return (
     <div className="space-y-6">
       {/* Market Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
         {currentMarkets.map((market, index) => (
           <motion.div
             key={market.id}

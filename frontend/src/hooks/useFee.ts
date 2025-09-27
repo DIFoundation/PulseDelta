@@ -1,5 +1,5 @@
-import { useReadContract } from "wagmi";
-import { CONTRACT_ADDRESSES, ABI } from "@/lib/abiAndAddress";
+// import { useReadContract } from "wagmi";
+// import { CONTRACT_ADDRESSES, ABI } from "@/lib/abiAndAddress";
 
 /**
  * Hook to get the trading fee from the smart contracts

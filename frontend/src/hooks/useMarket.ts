@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useReadContract } from "wagmi";
+// import { useReadContract } from "wagmi";
 import { useFactory } from "./useFactory";
 import { MarketMetadataService } from "@/lib/supabase";
-import { CONTRACT_ADDRESSES, ABI } from "@/lib/abiAndAddress";
-import type { Market, CreateMarketParams, TradeOrder } from "@/types/market";
+// import { CONTRACT_ADDRESSES, ABI } from "@/lib/abiAndAddress";
+import { isMarketCategory } from "@/utils/guard";
+import type { Market, CreateMarketParams } from "@/types/market";
 
 /**
  * Hook for fetching market list with pagination and filtering
@@ -42,8 +43,14 @@ export function useMarketList(
         // Process binary markets
         if (binaryMarkets && binaryMarkets.length > 0) {
           console.log(`Processing ${binaryMarkets.length} binary markets...`);
-          for (const marketAddress of binaryMarkets) {
-            console.log("Processing binary market:", marketAddress);
+          for (let i = 0; i < binaryMarkets.length; i++) {
+            const marketAddress = binaryMarkets[i];
+            console.log(
+              "Processing binary market:",
+              marketAddress,
+              "at index:",
+              i
+            );
             if (
               marketAddress &&
               marketAddress !== "0x0000000000000000000000000000000000000000"
@@ -51,9 +58,12 @@ export function useMarketList(
               try {
                 const marketData = await factory.getMarketData(
                   marketAddress,
-                  "binary"
+                  "binary",
+                  i + 1 // Pass the global market ID (1-indexed to match contract)
                 );
                 console.log("Binary market data:", marketData);
+                console.log("Binary market ID:", marketData?.id);
+                console.log("Binary market title:", marketData?.title);
                 if (marketData) {
                   allMarkets.push(marketData);
                 }
@@ -70,8 +80,14 @@ export function useMarketList(
         // Process multi markets
         if (multiMarkets && multiMarkets.length > 0) {
           console.log(`Processing ${multiMarkets.length} multi markets...`);
-          for (const marketAddress of multiMarkets) {
-            console.log("Processing multi market:", marketAddress);
+          for (let i = 0; i < multiMarkets.length; i++) {
+            const marketAddress = multiMarkets[i];
+            console.log(
+              "Processing multi market:",
+              marketAddress,
+              "at index:",
+              i
+            );
             if (
               marketAddress &&
               marketAddress !== "0x0000000000000000000000000000000000000000"
@@ -79,7 +95,8 @@ export function useMarketList(
               try {
                 const marketData = await factory.getMarketData(
                   marketAddress,
-                  "multi"
+                  "multi",
+                  i + 1 // Pass the global market ID (1-indexed to match contract)
                 );
                 console.log("Multi market data:", marketData);
                 if (marketData) {
@@ -98,8 +115,14 @@ export function useMarketList(
         // Process scalar markets
         if (scalarMarkets && scalarMarkets.length > 0) {
           console.log(`Processing ${scalarMarkets.length} scalar markets...`);
-          for (const marketAddress of scalarMarkets) {
-            console.log("Processing scalar market:", marketAddress);
+          for (let i = 0; i < scalarMarkets.length; i++) {
+            const marketAddress = scalarMarkets[i];
+            console.log(
+              "Processing scalar market:",
+              marketAddress,
+              "at index:",
+              i
+            );
             if (
               marketAddress &&
               marketAddress !== "0x0000000000000000000000000000000000000000"
@@ -107,7 +130,8 @@ export function useMarketList(
               try {
                 const marketData = await factory.getMarketData(
                   marketAddress,
-                  "scalar"
+                  "scalar",
+                  i + 1 // Pass the global market ID (1-indexed to match contract)
                 );
                 console.log("Scalar market data:", marketData);
                 if (marketData) {
@@ -131,7 +155,7 @@ export function useMarketList(
 
       return allMarkets;
     },
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 1000 * 30, // 30 seconds - shorter cache to ensure fresh data
   });
 }
 
@@ -186,7 +210,8 @@ export function useMarket(marketId: string) {
       // Get on-chain data
       const onChainData = await factory.getMarketData(
         marketAddress,
-        marketType as "binary" | "multi" | "scalar"
+        marketType as "binary" | "multi" | "scalar",
+        marketIdNum // Pass the global market ID for correct curation status
       );
 
       if (!onChainData) {
@@ -201,7 +226,9 @@ export function useMarket(marketId: string) {
         // Combine on-chain data with Supabase metadata
         return {
           ...onChainData,
-          category: metadata.category,
+          category: isMarketCategory(metadata.category)
+            ? metadata.category
+            : onChainData.category,
           tags: metadata.tags,
           resolutionSource: metadata.resolution_source,
           template: metadata.template_name,
@@ -212,7 +239,8 @@ export function useMarket(marketId: string) {
       return onChainData;
     },
     enabled: !!marketId,
-    staleTime: 1000 * 30, // 30 seconds
+    staleTime: 1000 * 5,
+    refetchInterval: 1000 * 5,
   });
 }
 
@@ -224,8 +252,8 @@ export function useTrade(marketId: string) {
 
   const buyMutation = useMutation({
     mutationFn: async ({
-      outcomeIndex,
-      amount,
+      // outcomeIndex,
+      // amount,
     }: {
       outcomeIndex: number;
       amount: string;
@@ -242,8 +270,8 @@ export function useTrade(marketId: string) {
 
   const sellMutation = useMutation({
     mutationFn: async ({
-      outcomeIndex,
-      amount,
+      // outcomeIndex,
+      // amount,
     }: {
       outcomeIndex: number;
       amount: string;
@@ -275,7 +303,7 @@ export function useLiquidity(marketId: string) {
   const queryClient = useQueryClient();
 
   const addMutation = useMutation({
-    mutationFn: async ({ amount }: { amount: string }) => {
+    mutationFn: async ({} : { amount: string }) => {
       // Mock transaction - replace with actual contract call
       await new Promise((resolve) => setTimeout(resolve, 2000));
       return { hash: `0x${"0".repeat(64)}` };
@@ -286,7 +314,7 @@ export function useLiquidity(marketId: string) {
   });
 
   const removeMutation = useMutation({
-    mutationFn: async ({ lpTokens }: { lpTokens: string }) => {
+    mutationFn: async ({ }: { lpTokens: string }) => {
       // Mock transaction - replace with actual contract call
       await new Promise((resolve) => setTimeout(resolve, 2000));
       return { hash: `0x${"0".repeat(64)}` };

@@ -186,6 +186,7 @@ import {
     const abi = ABI.multiFactory;
   
     const useMarketCreatedEvent = (
+      /* eslint-disable-next-line */
       onEvent?: (logs: any[]) => void,
       options?: { enabled?: boolean }
     ) => {
@@ -202,6 +203,7 @@ import {
       onNewMarket?: (market: Address, marketId: bigint) => void
     ) => {
       return useMarketCreatedEvent((logs) => {
+        /* eslint-disable-next-line */
         logs.forEach((log: any) => {
           if (log.args?.market && log.args?.marketId) {
             onNewMarket?.(log.args.market, log.args.marketId);

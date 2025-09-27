@@ -1,25 +1,31 @@
 /* eslint-disable @next/next/no-img-element */
 "use client"
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { TrendingUp, Plus, Droplets, Shield, User, Menu, X, Wallet } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { ThemeToggle } from "@/components/ThemeToggle"
-import { WalletModal } from "@/components/WalletModal"
-import { useAccount } from "wagmi"
-import { useCouncil } from "@/hooks/useCouncil"
-import Image from "next/image"
-
-import logo from "../assets/logo.png"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  TrendingUp,
+  Plus,
+  Droplets,
+  Shield,
+  User,
+  Menu,
+  X,
+  // Wallet,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { WalletModal } from "@/components/WalletModal";
+// import { useAccount } from "wagmi";
+import { useCouncil } from "@/hooks/useCouncil";
 
 export function Navigation() {
-	const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-	const pathname = usePathname()
-	const { isConnected, address } = useAccount()
-	const { isCouncilMember } = useCouncil()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+  // const { isConnected, address } = useAccount();
+  const { isCouncilMember } = useCouncil();
 
 	const navItems = [
 		{ href: "/markets", label: "Markets", icon: TrendingUp },

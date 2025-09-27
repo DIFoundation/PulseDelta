@@ -409,6 +409,7 @@ export function useWDAGEvents() {
 
     // Watch Approval events
   const useApprovalEvent = (
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void,
     options?: {
       owner?: Address;
@@ -431,6 +432,7 @@ export function useWDAGEvents() {
 
   // Watch Deposit events
   const useDepositEvent = (
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void,
     options?: {
       user?: Address;
@@ -449,6 +451,7 @@ export function useWDAGEvents() {
 
   // Watch MinterAdded events
   const useMinterAddedEvent = (
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void,
     options?: {
       minter?: Address;
@@ -467,6 +470,7 @@ export function useWDAGEvents() {
 
   // Watch MinterRemoved events
   const useMinterRemovedEvent = (
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void,
     options?: {
       minter?: Address;
@@ -485,6 +489,7 @@ export function useWDAGEvents() {
 
   // Watch OwnershipTransferred events
   const useOwnershipTransferredEvent = (
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void,
     options?: {
       previousOwner?: Address;
@@ -507,6 +512,7 @@ export function useWDAGEvents() {
 
   // Watch Transfer events
   const useTransferEvent = (
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void,
     options?: {
       from?: Address;
@@ -529,6 +535,7 @@ export function useWDAGEvents() {
 
   // Watch Withdrawal events
   const useWithdrawalEvent = (
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void,
     options?: {
       user?: Address;
@@ -548,6 +555,7 @@ export function useWDAGEvents() {
   // Watch user-specific events (transfers, deposits, withdrawals)
   const useMyEvents = (
     userAddress?: Address,
+    /* eslint-disable-next-line */
     onEvent?: (logs: any[]) => void
   ) => {
     useTransferEvent(onEvent, { from: userAddress });

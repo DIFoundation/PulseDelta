@@ -22,7 +22,7 @@ export function TradeWidget({
 }: TradeWidgetProps) {
   const [amount, setAmount] = useState("");
   const [calculatedCost, setCalculatedCost] = useState({ cost: 0, fee: 0 });
-  const [activeTab, setActiveTab] = useState("buy");
+  const [setActiveTab] = useState("buy");
 
   const { executeTrade, calculateCost, tradingState, bDAGBalance } =
     useTrading();

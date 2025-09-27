@@ -3,12 +3,14 @@ import { useAccount, useWriteContract } from 'wagmi';
 import { parseUnits } from 'viem';
 import { CONTRACT_ADDRESSES, ABI } from '../lib/abiAndAddress';
 import { toast } from './use-toast';
-import { config } from '../configs/index';
 import { readContract } from 'viem/actions';
+import { client } from '@/configs/index';
 
 export function useBinaryTrade(marketId: string) {
   const { address } = useAccount();
   const { writeContract } = useWriteContract();
+  const clients = client;
+
 
   const checkAllowance = useCallback(async (amount: string): Promise<boolean> => {
     if (!address) return false;
@@ -17,7 +19,7 @@ export function useBinaryTrade(marketId: string) {
     const shares = parseUnits(amount, 18);
     
     try {
-      const allowance = await readContract(config, {
+      const allowance = await readContract(clients, {
         address: CONTRACT_ADDRESSES.wDAG as `0x${string}`,
         abi: ABI.wDAG,
         functionName: 'allowance',
@@ -93,9 +95,9 @@ export function useBinaryTrade(marketId: string) {
   };
 }
 
-// async function getMarketAddress(marketId: string): Promise<`0x${string}`> {
-//   // TODO: Implement market address resolution
-//   // This should fetch the market address from the factory contract
-//   // For now, returning a placeholder
-//   return '0x0000000000000000000000000000000000000000' as const;
-// }
+async function getMarketAddress(marketId: string): Promise<`0x${string}`> {
+  // TODO: Implement market address resolution
+  // This should fetch the market address from the factory contract
+  // For now, returning a placeholder
+  return '0x0000000000000000000000000000000000000000' as const;
+}

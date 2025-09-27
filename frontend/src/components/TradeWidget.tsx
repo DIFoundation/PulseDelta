@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ export function TradeWidget({
 }: TradeWidgetProps) {
   const [amount, setAmount] = useState("");
   const [calculatedCost, setCalculatedCost] = useState({ cost: 0, fee: 0 });
-  const [setActiveTab] = useState("buy");
+  const [activeTab, setActiveTab] = useState("buy");
 
   const { executeTrade, calculateCost, tradingState, bDAGBalance } =
     useTrading();

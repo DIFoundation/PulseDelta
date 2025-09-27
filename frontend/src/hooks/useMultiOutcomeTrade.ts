@@ -3,13 +3,14 @@ import { useAccount, useWriteContract } from 'wagmi';
 import { parseUnits } from 'viem';
 import { CONTRACT_ADDRESSES, ABI } from '../lib/abiAndAddress';
 import { useToast } from './use-toast';
-import { config } from '../configs/index';
+import { config, client } from '../configs/index';
 import { readContract } from 'viem/actions';
 
 export function useMultiOutcomeTrade(marketId: string, outcomeIndex: number) {
   const { address } = useAccount();
   const { writeContract } = useWriteContract();
   const { toast } = useToast();
+  const clients = client;
 
   const checkAllowance = useCallback(async (amount: string): Promise<boolean> => {
     if (!address) return false;
@@ -18,7 +19,7 @@ export function useMultiOutcomeTrade(marketId: string, outcomeIndex: number) {
     const shares = parseUnits(amount, 18);
     
     try {
-      const allowance = await readContract(config, {
+      const allowance = await readContract(clients, {
         address: CONTRACT_ADDRESSES.wDAG as `0x${string}`,
         abi: ABI.wDAG,
         functionName: 'allowance',
@@ -94,7 +95,7 @@ export function useMultiOutcomeTrade(marketId: string, outcomeIndex: number) {
   };
 }
 
-// async function getMarketAddress(marketId: string): Promise<`0x${string}`> {
-//   // TODO: Implement market address resolution from factory
-//   return '0x0000000000000000000000000000000000000000' as const;
-// }
+async function getMarketAddress(marketId: string): Promise<`0x${string}`> {
+  // TODO: Implement market address resolution from factory
+  return '0x0000000000000000000000000000000000000000' as const;
+}

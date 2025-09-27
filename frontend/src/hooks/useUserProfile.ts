@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAccount } from "wagmi";
 import { readContract } from "@wagmi/core";
 import { config } from "@/configs";
-import { CONTRACT_ADDRESSES } from "@/lib/abiAndAddress";
 import { MARKET_ABIS } from "@/lib/marketABIs";
 import { useFactory } from "./useFactory";
 
@@ -108,7 +106,8 @@ export function useUserProfile(userAddress?: `0x${string}`) {
               args: [userAddress],
             });
 
-            const volume = parseFloat(traderVolume.toString()) / 1e18; // Convert from wei
+            const volume =
+              parseFloat((traderVolume as bigint).toString()) / 1e18; // Convert from wei
             totalVolume += volume;
 
             // Add to trading history (mock data for now - in real implementation,

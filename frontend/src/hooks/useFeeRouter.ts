@@ -1,7 +1,13 @@
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useWatchContractEvent, useAccount } from 'wagmi';
-import { Address } from 'viem';
-import { CONTRACT_ADDRESSES } from '@/lib/abiAndAddress';
-import { ABI } from '@/lib/abiAndAddress';
+import {
+  useReadContract,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  useWatchContractEvent,
+  useAccount,
+} from "wagmi";
+import { Address } from "viem";
+import { CONTRACT_ADDRESSES } from "@/lib/abiAndAddress";
+import { ABI } from "@/lib/abiAndAddress";
 
 // Types
 interface CreatorStats {
@@ -23,43 +29,48 @@ interface ProtocolStats {
 // Contract function signatures (hashes)
 export const FUNCTION_SIGNATURES = {
   // Read functions
-  creatorAccrued: '0x7b1e2adb',
-  creatorFeesByMarket: '0x8fa1c4a4',
-  creatorLifetimeFees: '0x3b4da69f',
-  creatorOf: '0x9ec5a894',
-  getCreator: '0x9b2cb5d8',
-  getCreatorFeesForMarket: '0x1e83409a',
-  getCreatorLifetimeFees: '0x8d4dc9cf',
-  getCreatorStats: '0x7c0dc9a3',
-  getLPFeesForMarket: '0x4b5c4277',
-  getLPStats: '0x6c2a32c5',
-  getProtocolStats: '0x8a4f8b42',
-  getTotalLPFees: '0x9e5d4c27',
-  lpAccrued: '0x1f2f2b35',
-  owner: '0x8da5cb5b',
-  protocolAccrued: '0x4e71d92d',
-  totalLPFees: '0x5c975abb',
-  
+  creatorAccrued: "0x7b1e2adb",
+  creatorFeesByMarket: "0x8fa1c4a4",
+  creatorLifetimeFees: "0x3b4da69f",
+  creatorOf: "0x9ec5a894",
+  getCreator: "0x9b2cb5d8",
+  getCreatorFeesForMarket: "0x1e83409a",
+  getCreatorLifetimeFees: "0x8d4dc9cf",
+  getCreatorStats: "0x7c0dc9a3",
+  getLPFeesForMarket: "0x4b5c4277",
+  getLPStats: "0x6c2a32c5",
+  getProtocolStats: "0x8a4f8b42",
+  getTotalLPFees: "0x9e5d4c27",
+  lpAccrued: "0x1f2f2b35",
+  owner: "0x8da5cb5b",
+  protocolAccrued: "0x4e71d92d",
+  totalLPFees: "0x5c975abb",
+
   // Write functions
-  accrue: '0x33ce93fe',
-  claimCreator: '0x8a4c3b7e',
-  claimProtocol: '0x5e8a7362',
-  setCreator: '0x4dd18bf5',
+  accrue: "0x33ce93fe",
+  claimCreator: "0x8a4c3b7e",
+  claimProtocol: "0x5e8a7362",
+  setCreator: "0x4dd18bf5",
 };
 
 // Event signatures (topic hashes)
 export const EVENT_SIGNATURES = {
-  Accrued: '0x4e6f7e7c8e5a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e',
-  ClaimedCreator: '0x2e6f7e7c8e5a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d',
-  ClaimedProtocol: '0x1e6f7e7c8e5a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3',
-  CreatorSet: '0x3e6f7e7c8e5a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2',
-  LPFeesAccrued: '0x5e6f7e7c8e5a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1',
+  Accrued:
+    "0x4e6f7e7c8e5a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e",
+  ClaimedCreator:
+    "0x2e6f7e7c8e5a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d",
+  ClaimedProtocol:
+    "0x1e6f7e7c8e5a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3",
+  CreatorSet:
+    "0x3e6f7e7c8e5a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2",
+  LPFeesAccrued:
+    "0x5e6f7e7c8e5a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1",
 };
 
 // Error signatures
 export const ERROR_SIGNATURES = {
-  NotOwner: '0x30cd7471',
-  ZeroAddress: '0xd92e233d',
+  NotOwner: "0x30cd7471",
+  ZeroAddress: "0xd92e233d",
 };
 
 export function useFeeRouterGetters() {
@@ -72,7 +83,7 @@ export function useFeeRouterGetters() {
     return useReadContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'creatorAccrued',
+      functionName: "creatorAccrued",
       args: creator ? [creator] : undefined,
       query: {
         enabled: !!creator,
@@ -85,7 +96,7 @@ export function useFeeRouterGetters() {
     return useReadContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'creatorFeesByMarket',
+      functionName: "creatorFeesByMarket",
       args: creator && market ? [creator, market] : undefined,
       query: {
         enabled: !!creator && !!market,
@@ -98,7 +109,7 @@ export function useFeeRouterGetters() {
     return useReadContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'creatorLifetimeFees',
+      functionName: "creatorLifetimeFees",
       args: creator ? [creator] : undefined,
       query: {
         enabled: !!creator,
@@ -111,7 +122,7 @@ export function useFeeRouterGetters() {
     return useReadContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'creatorOf',
+      functionName: "creatorOf",
       args: market ? [market] : undefined,
       query: {
         enabled: !!market,
@@ -124,7 +135,7 @@ export function useFeeRouterGetters() {
     return useReadContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'getCreator',
+      functionName: "getCreator",
       args: market ? [market] : undefined,
       query: {
         enabled: !!market,
@@ -137,7 +148,7 @@ export function useFeeRouterGetters() {
     return useReadContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'getCreatorFeesForMarket',
+      functionName: "getCreatorFeesForMarket",
       args: creator && market ? [creator, market] : undefined,
       query: {
         enabled: !!creator && !!market,
@@ -150,7 +161,7 @@ export function useFeeRouterGetters() {
     return useReadContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'getCreatorLifetimeFees',
+      functionName: "getCreatorLifetimeFees",
       args: creator ? [creator] : undefined,
       query: {
         enabled: !!creator,
@@ -163,13 +174,13 @@ export function useFeeRouterGetters() {
     return useReadContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'getCreatorStats',
+      functionName: "getCreatorStats",
       args: creator ? [creator] : undefined,
       query: {
         enabled: !!creator,
       },
-    }) as ReturnType<typeof useReadContract> & { 
-      data?: [bigint, bigint, bigint] 
+    }) as ReturnType<typeof useReadContract> & {
+      data?: [bigint, bigint, bigint];
     };
   };
 
@@ -178,7 +189,7 @@ export function useFeeRouterGetters() {
     return useReadContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'getLPFeesForMarket',
+      functionName: "getLPFeesForMarket",
       args: market ? [market] : undefined,
       query: {
         enabled: !!market,
@@ -191,9 +202,9 @@ export function useFeeRouterGetters() {
     return useReadContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'getLPStats',
-    }) as ReturnType<typeof useReadContract> & { 
-      data?: [bigint, bigint] 
+      functionName: "getLPStats",
+    }) as ReturnType<typeof useReadContract> & {
+      data?: [bigint, bigint];
     };
   };
 
@@ -202,9 +213,9 @@ export function useFeeRouterGetters() {
     return useReadContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'getProtocolStats',
-    }) as ReturnType<typeof useReadContract> & { 
-      data?: [bigint, bigint] 
+      functionName: "getProtocolStats",
+    }) as ReturnType<typeof useReadContract> & {
+      data?: [bigint, bigint];
     };
   };
 
@@ -213,7 +224,7 @@ export function useFeeRouterGetters() {
     return useReadContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'getTotalLPFees',
+      functionName: "getTotalLPFees",
     });
   };
 
@@ -222,7 +233,7 @@ export function useFeeRouterGetters() {
     return useReadContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'lpAccrued',
+      functionName: "lpAccrued",
       args: market ? [market] : undefined,
       query: {
         enabled: !!market,
@@ -235,7 +246,7 @@ export function useFeeRouterGetters() {
     return useReadContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'owner',
+      functionName: "owner",
     });
   };
 
@@ -244,7 +255,7 @@ export function useFeeRouterGetters() {
     return useReadContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'protocolAccrued',
+      functionName: "protocolAccrued",
       args: market ? [market] : undefined,
       query: {
         enabled: !!market,
@@ -257,7 +268,7 @@ export function useFeeRouterGetters() {
     return useReadContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'totalLPFees',
+      functionName: "totalLPFees",
     });
   };
 
@@ -310,9 +321,10 @@ export function useFeeRouterSetters() {
   const { writeContract, data: hash, error, isPending } = useWriteContract();
 
   // Wait for transaction confirmation
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-    hash,
-  });
+  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({
+      hash,
+    });
 
   // Accrue fees for a market
   const accrue = (
@@ -324,7 +336,7 @@ export function useFeeRouterSetters() {
     writeContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'accrue',
+      functionName: "accrue",
       args: [market, protocolFee, creatorFee, lpFee],
     });
   };
@@ -334,7 +346,7 @@ export function useFeeRouterSetters() {
     writeContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'claimCreator',
+      functionName: "claimCreator",
       args: [market, to],
     });
   };
@@ -344,7 +356,7 @@ export function useFeeRouterSetters() {
     writeContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'claimProtocol',
+      functionName: "claimProtocol",
       args: [to],
     });
   };
@@ -354,7 +366,7 @@ export function useFeeRouterSetters() {
     writeContract({
       address: feeRouter as Address,
       abi,
-      functionName: 'setCreator',
+      functionName: "setCreator",
       args: [market, creator],
     });
   };
@@ -381,7 +393,7 @@ export function useFeeRouterEvents() {
 
   // Watch Accrued events
   const useAccruedEvent = (
-    onEvent?: (logs: any[]) => void,
+    onEvent?: (logs: unknown[]) => void,
     options?: {
       market?: Address;
       enabled?: boolean;
@@ -390,7 +402,7 @@ export function useFeeRouterEvents() {
     return useWatchContractEvent({
       address: feeRouter as Address,
       abi,
-      eventName: 'Accrued',
+      eventName: "Accrued",
       args: options?.market ? { market: options.market } : undefined,
       onLogs: onEvent,
       enabled: options?.enabled !== false,
@@ -399,7 +411,7 @@ export function useFeeRouterEvents() {
 
   // Watch ClaimedCreator events
   const useClaimedCreatorEvent = (
-    onEvent?: (logs: any[]) => void,
+    onEvent?: (logs: unknown[]) => void,
     options?: {
       creator?: Address;
       enabled?: boolean;
@@ -408,7 +420,7 @@ export function useFeeRouterEvents() {
     return useWatchContractEvent({
       address: feeRouter as Address,
       abi,
-      eventName: 'ClaimedCreator',
+      eventName: "ClaimedCreator",
       args: options?.creator ? { creator: options.creator } : undefined,
       onLogs: onEvent,
       enabled: options?.enabled !== false,
@@ -417,7 +429,7 @@ export function useFeeRouterEvents() {
 
   // Watch ClaimedProtocol events
   const useClaimedProtocolEvent = (
-    onEvent?: (logs: any[]) => void,
+    onEvent?: (logs: unknown[]) => void,
     options?: {
       to?: Address;
       enabled?: boolean;
@@ -426,7 +438,7 @@ export function useFeeRouterEvents() {
     return useWatchContractEvent({
       address: feeRouter as Address,
       abi,
-      eventName: 'ClaimedProtocol',
+      eventName: "ClaimedProtocol",
       args: options?.to ? { to: options.to } : undefined,
       onLogs: onEvent,
       enabled: options?.enabled !== false,
@@ -435,7 +447,7 @@ export function useFeeRouterEvents() {
 
   // Watch CreatorSet events
   const useCreatorSetEvent = (
-    onEvent?: (logs: any[]) => void,
+    onEvent?: (logs: unknown[]) => void,
     options?: {
       market?: Address;
       creator?: Address;
@@ -445,11 +457,14 @@ export function useFeeRouterEvents() {
     return useWatchContractEvent({
       address: feeRouter as Address,
       abi,
-      eventName: 'CreatorSet',
-      args: options?.market || options?.creator ? {
-        market: options?.market,
-        creator: options?.creator,
-      } : undefined,
+      eventName: "CreatorSet",
+      args:
+        options?.market || options?.creator
+          ? {
+              market: options?.market,
+              creator: options?.creator,
+            }
+          : undefined,
       onLogs: onEvent,
       enabled: options?.enabled !== false,
     });
@@ -457,7 +472,7 @@ export function useFeeRouterEvents() {
 
   // Watch LPFeesAccrued events
   const useLPFeesAccruedEvent = (
-    onEvent?: (logs: any[]) => void,
+    onEvent?: (logs: unknown[]) => void,
     options?: {
       market?: Address;
       enabled?: boolean;
@@ -466,7 +481,7 @@ export function useFeeRouterEvents() {
     return useWatchContractEvent({
       address: feeRouter as Address,
       abi,
-      eventName: 'LPFeesAccrued',
+      eventName: "LPFeesAccrued",
       args: options?.market ? { market: options.market } : undefined,
       onLogs: onEvent,
       enabled: options?.enabled !== false,
@@ -476,7 +491,7 @@ export function useFeeRouterEvents() {
   // Watch creator-specific events (claims and creator sets)
   const useMyCreatorEvents = (
     userAddress?: Address,
-    onEvent?: (logs: any[]) => void
+    onEvent?: (logs: unknown[]) => void
   ) => {
     useClaimedCreatorEvent(onEvent, { creator: userAddress });
     useCreatorSetEvent(onEvent, { creator: userAddress });
@@ -485,7 +500,7 @@ export function useFeeRouterEvents() {
   // Watch market-specific events
   const useMarketEvents = (
     market?: Address,
-    onEvent?: (logs: any[]) => void
+    onEvent?: (logs: unknown[]) => void
   ) => {
     useAccruedEvent(onEvent, { market });
     useLPFeesAccruedEvent(onEvent, { market });
@@ -512,13 +527,13 @@ export function useFeeRouter() {
   return {
     // Getters
     ...getters,
-    
+
     // Setters
     ...setters,
-    
+
     // Events
     ...events,
-    
+
     // Constants
     functionSignatures: FUNCTION_SIGNATURES,
     eventSignatures: EVENT_SIGNATURES,
@@ -540,7 +555,9 @@ export const useFeeRouterUtils = () => {
     return /^0x[a-fA-F0-9]{40}$/.test(address);
   };
 
-  const formatCreatorStats = (stats: [bigint, bigint, bigint]): CreatorStats => {
+  const formatCreatorStats = (
+    stats: [bigint, bigint, bigint]
+  ): CreatorStats => {
     const [lifetimeFees, claimableFees, totalMarkets] = stats;
     return {
       lifetimeFees,

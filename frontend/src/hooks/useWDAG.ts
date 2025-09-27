@@ -409,7 +409,7 @@ export function useWDAGEvents() {
 
     // Watch Approval events
   const useApprovalEvent = (
-    onEvent?: (logs: any[]) => void,
+    onEvent?: (logs: unknown[]) => void,
     options?: {
       owner?: Address;
       spender?: Address;
@@ -431,7 +431,7 @@ export function useWDAGEvents() {
 
   // Watch Deposit events
   const useDepositEvent = (
-    onEvent?: (logs: any[]) => void,
+    onEvent?: (logs: unknown[]) => void,
     options?: {
       user?: Address;
       enabled?: boolean;
@@ -449,7 +449,7 @@ export function useWDAGEvents() {
 
   // Watch MinterAdded events
   const useMinterAddedEvent = (
-    onEvent?: (logs: any[]) => void,
+    onEvent?: (logs: unknown[]) => void,
     options?: {
       minter?: Address;
       enabled?: boolean;
@@ -467,7 +467,7 @@ export function useWDAGEvents() {
 
   // Watch MinterRemoved events
   const useMinterRemovedEvent = (
-    onEvent?: (logs: any[]) => void,
+    onEvent?: (logs: unknown[]) => void,
     options?: {
       minter?: Address;
       enabled?: boolean;
@@ -485,7 +485,7 @@ export function useWDAGEvents() {
 
   // Watch OwnershipTransferred events
   const useOwnershipTransferredEvent = (
-    onEvent?: (logs: any[]) => void,
+    onEvent?: (logs: unknown[]) => void,
     options?: {
       previousOwner?: Address;
       newOwner?: Address;
@@ -507,7 +507,7 @@ export function useWDAGEvents() {
 
   // Watch Transfer events
   const useTransferEvent = (
-    onEvent?: (logs: any[]) => void,
+    onEvent?: (logs: unknown[]) => void,
     options?: {
       from?: Address;
       to?: Address;
@@ -529,7 +529,7 @@ export function useWDAGEvents() {
 
   // Watch Withdrawal events
   const useWithdrawalEvent = (
-    onEvent?: (logs: any[]) => void,
+    onEvent?: (logs: unknown[]) => void,
     options?: {
       user?: Address;
       enabled?: boolean;
@@ -548,7 +548,7 @@ export function useWDAGEvents() {
   // Watch user-specific events (transfers, deposits, withdrawals)
   const useMyEvents = (
     userAddress?: Address,
-    onEvent?: (logs: any[]) => void
+    onEvent?: (logs: unknown[]) => void
   ) => {
     useTransferEvent(onEvent, { from: userAddress });
     useTransferEvent(onEvent, { to: userAddress });

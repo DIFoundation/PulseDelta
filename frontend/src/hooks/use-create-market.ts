@@ -87,8 +87,6 @@ export function useCreateMarket() {
           initialLiquidity: formData.initialLiquidity,
         };
 
-        let hash: string;
-
         // Call appropriate factory function based on market type
         let marketResult: {
           hash: string;
@@ -102,8 +100,8 @@ export function useCreateMarket() {
             category: formData.template.category.toLowerCase() as
               | "sports"
               | "crypto"
-              | "trends"
-              | "other",
+              | "trends",
+            outcomes: ["Yes", "No"],
           });
         } else if (formData.marketType === "multi") {
           marketResult = await createMultiMarket({
@@ -111,8 +109,7 @@ export function useCreateMarket() {
             category: formData.template.category.toLowerCase() as
               | "sports"
               | "crypto"
-              | "trends"
-              | "other",
+              | "trends",
             outcomes: formData.outcomes,
           });
         } else if (formData.marketType === "scalar") {
@@ -121,8 +118,8 @@ export function useCreateMarket() {
             category: formData.template.category.toLowerCase() as
               | "sports"
               | "crypto"
-              | "trends"
-              | "other",
+              | "trends",
+            outcomes: ["Long", "Short"],
             minValue: formData.minValue || "0",
             maxValue: formData.maxValue || "1000000",
           });
@@ -205,6 +202,7 @@ export function useCreateMarket() {
       }
     },
     [
+      address,
       createBinaryMarket,
       createMultiMarket,
       createScalarMarket,

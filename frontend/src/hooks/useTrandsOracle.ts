@@ -371,7 +371,7 @@ export function useTrendsOracleEvents() {
 
   // Watch Disputed events
   const useDisputedEvent = (
-    onEvent?: (logs: any[]) => void,
+    onEvent?: (logs: unknown[]) => void,
     options?: {
       marketId?: bigint;
       enabled?: boolean;
@@ -389,7 +389,7 @@ export function useTrendsOracleEvents() {
 
   // Watch FactoryAuthorized events
   const useFactoryAuthorizedEvent = (
-    onEvent?: (logs: any[]) => void,
+    onEvent?: (logs: unknown[]) => void,
     options?: {
       factory?: Address;
       enabled?: boolean;
@@ -406,7 +406,7 @@ export function useTrendsOracleEvents() {
 
   // Watch Finalized events
   const useFinalizedEvent = (
-    onEvent?: (logs: any[]) => void,
+    onEvent?: (logs: unknown[]) => void,
     options?: {
       marketId?: bigint;
       enabled?: boolean;
@@ -424,7 +424,7 @@ export function useTrendsOracleEvents() {
 
   // Watch Proposed events
   const useProposedEvent = (
-    onEvent?: (logs: any[]) => void,
+    onEvent?: (logs: unknown[]) => void,
     options?: {
       marketId?: bigint;
       enabled?: boolean;
@@ -442,7 +442,7 @@ export function useTrendsOracleEvents() {
 
   // Watch ReporterSet events
   const useReporterSetEvent = (
-    onEvent?: (logs: any[]) => void,
+    onEvent?: (logs: unknown[]) => void,
     options?: {
       reporter?: Address;
       enabled?: boolean;
@@ -460,7 +460,7 @@ export function useTrendsOracleEvents() {
   // Watch market-specific events
   const useMarketEvents = (
     marketId?: bigint,
-    onEvent?: (logs: any[]) => void
+    onEvent?: (logs: unknown[]) => void
   ) => {
     useProposedEvent(onEvent, { marketId });
     useDisputedEvent(onEvent, { marketId });
@@ -470,7 +470,7 @@ export function useTrendsOracleEvents() {
   // Watch reporter-specific events
   const useReporterEvents = (
     reporter?: Address,
-    onEvent?: (logs: any[]) => void
+    onEvent?: (logs: unknown[]) => void
   ) => {
     useReporterSetEvent(onEvent, { reporter });
   };

@@ -21,16 +21,11 @@ export function TradeWidget({
   onTrade,
 }: TradeWidgetProps) {
   const [amount, setAmount] = useState("");
-  const [activeTab, setActiveTab] = useState("buy");
   const [calculatedCost, setCalculatedCost] = useState({ cost: 0, fee: 0 });
+  const [activeTab, setActiveTab] = useState("buy");
 
-  const {
-    executeTrade,
-    calculateCost,
-    tradingState,
-    resetTradingState,
-    bDAGBalance,
-  } = useTrading();
+  const { executeTrade, calculateCost, tradingState, bDAGBalance } =
+    useTrading();
 
   // Reset form when trade is successful
   useEffect(() => {

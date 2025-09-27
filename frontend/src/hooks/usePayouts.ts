@@ -3,8 +3,6 @@ import { useAccount } from "wagmi";
 import { readContract } from "@wagmi/core";
 import { config } from "@/configs";
 import { MARKET_ABIS } from "@/lib/marketABIs";
-import { CONTRACT_ADDRESSES } from "@/lib/abiAndAddress";
-import { toast } from "react-toastify";
 import type { Market } from "@/types/market";
 
 interface OutcomeTokenBalance {
@@ -210,7 +208,9 @@ export function usePayouts() {
 
   // Get market resolution status
   const getMarketStatus = useCallback(
-    async (market: Market): Promise<{
+    async (
+      market: Market
+    ): Promise<{
       resolved: boolean;
       winningOutcome?: number;
       canClaim: boolean;
@@ -223,12 +223,16 @@ export function usePayouts() {
         const [state, finalOutcome] = await Promise.all([
           readContract(config, {
             address: market.address as `0x${string}`,
-            abi: MARKET_ABIS[`${market.type}Market` as keyof typeof MARKET_ABIS],
+            abi: MARKET_ABIS[
+              `${market.type}Market` as keyof typeof MARKET_ABIS
+            ],
             functionName: "state",
           }),
           readContract(config, {
             address: market.address as `0x${string}`,
-            abi: MARKET_ABIS[`${market.type}Market` as keyof typeof MARKET_ABIS],
+            abi: MARKET_ABIS[
+              `${market.type}Market` as keyof typeof MARKET_ABIS
+            ],
             functionName: "finalOutcome",
           }).catch(() => 0), // Some markets might not have finalOutcome
         ]);

@@ -12,7 +12,6 @@ import {
   User,
   Menu,
   X,
-  Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -23,7 +22,7 @@ import { useCouncil } from "@/hooks/useCouncil";
 export function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-  const { isConnected, address } = useAccount();
+  const {} = useAccount();
   const { isCouncilMember } = useCouncil();
 
   const navItems = [

@@ -1,11 +1,7 @@
 import { useWriteContract, useAccount, useBalance } from "wagmi";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
-import {
-  readContract,
-  writeContract,
-  waitForTransactionReceipt,
-} from "@wagmi/core";
+import { readContract, waitForTransactionReceipt } from "@wagmi/core";
 import { config } from "@/configs";
 import { MARKET_ABIS } from "@/lib/marketABIs";
 import { CONTRACT_ADDRESSES, ABI } from "@/lib/abiAndAddress";
@@ -63,10 +59,21 @@ export function useTrading() {
           shares,
         });
 
+        const marketABIKey = `${market.type}Market` as keyof typeof MARKET_ABIS;
+
+        // Get fee basis points from the market contract
+        const feeBps = await readContract(config, {
+          address: market.address as `0x${string}`,
+          abi: MARKET_ABIS[marketABIKey],
+          functionName: "feeBps",
+        });
+
+        console.log("Fee basis points from contract:", feeBps);
+
         // Get current price from the market contract
         const price = await readContract(config, {
           address: market.address as `0x${string}`,
-          abi: MARKET_ABIS[`${market.type}Market` as keyof typeof MARKET_ABIS],
+          abi: MARKET_ABIS[marketABIKey],
           functionName: "price",
           args:
             market.type === "binary"
@@ -83,12 +90,14 @@ export function useTrading() {
 
         console.log("Price in wDAG:", priceInWdag);
 
-        // For now, use simple calculation: cost = shares * price
-        // In a real AMM, this would be more complex
+        // Calculate cost using simple formula (contract uses more complex AMM)
         const cost = shares * priceInWdag;
-        const fee = cost * 0.01; // 1% fee
 
-        console.log("Calculated cost:", { cost, fee });
+        // Calculate fee using contract's fee basis points
+        const feeBpsNumber = Number(feeBps);
+        const fee = (cost * feeBpsNumber) / 10000;
+
+        console.log("Calculated cost:", { cost, fee, feeBps: feeBpsNumber });
 
         return { cost, fee };
       } catch (error) {
@@ -176,7 +185,7 @@ export function useTrading() {
         );
         console.log("Required amount:", totalCost, "wDAG");
 
-        if (currentAllowance < totalCostWei) {
+        if ((currentAllowance as bigint) < totalCostWei) {
           toast.info("Approving market to spend wDAG...");
 
           const approveTxHash = await writeContractAsync({
@@ -238,14 +247,7 @@ export function useTrading() {
 
         // Record the trade in history
         if (market.address) {
-          addTrade(
-            market.address,
-            outcomeIndex,
-            market.outcomes[outcomeIndex],
-            Number(shares),
-            totalCost,
-            txHash
-          );
+          addTrade();
         }
 
         // Only show success toast after transaction is confirmed
@@ -285,7 +287,14 @@ export function useTrading() {
         throw error;
       }
     },
-    [address, calculateCost, bDAGBalance, writeContractAsync, queryClient]
+    [
+      address,
+      calculateCost,
+      bDAGBalance,
+      writeContractAsync,
+      queryClient,
+      addTrade,
+    ]
   );
 
   // Reset trading state

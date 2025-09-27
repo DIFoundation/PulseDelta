@@ -1,9 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useReadContract } from "wagmi";
 import { useFactory } from "./useFactory";
 import { MarketMetadataService } from "@/lib/supabase";
-import { CONTRACT_ADDRESSES, ABI } from "@/lib/abiAndAddress";
-import type { Market, CreateMarketParams, TradeOrder } from "@/types/market";
+import type { Market, CreateMarketParams } from "@/types/market";
 
 /**
  * Hook for fetching market list with pagination and filtering

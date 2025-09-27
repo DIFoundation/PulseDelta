@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAccount } from "wagmi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,12 +15,11 @@ import {
   Award,
   Activity,
   BarChart3,
-  Clock,
-  Users,
   Plus,
 } from "lucide-react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { formatPrice } from "@/lib/utils";
+import { FeeEarningsDisplay } from "@/components/FeeEarningsDisplay";
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -35,8 +33,8 @@ const cardVariants = {
 
 export default function ProfilePage() {
   const { address, isConnected } = useAccount();
-  const { userStats, tradingHistory, lpPositions, isLoading, error } =
-    useUserProfile(address);
+  const { data, isLoading, error } = useUserProfile(address);
+  const { userStats, tradingHistory, lpPositions } = data || {};
 
   if (!isConnected) {
     return (
@@ -366,13 +364,23 @@ export default function ProfilePage() {
         </motion.div>
       )}
 
+      {/* Fee Earnings */}
+      <motion.div
+        variants={itemVariants}
+        initial="hidden"
+        animate="visible"
+        transition={{ delay: 0.5 }}
+      >
+        <FeeEarningsDisplay />
+      </motion.div>
+
       {/* Join Date */}
       {stats.joinDate && (
         <motion.div
           variants={itemVariants}
           initial="hidden"
           animate="visible"
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.6 }}
         >
           <Card>
             <CardContent className="p-6">

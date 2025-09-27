@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useAccount } from "wagmi";
 import {
   Droplets,
   TrendingUp,
@@ -14,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
+import { useLPEarnings } from "@/hooks/useLPEarnings";
+import { formatPrice } from "@/lib/utils";
 
 interface LpPosition {
   marketId: string;
@@ -68,24 +71,27 @@ const mockPositions: LpPosition[] = [
  * Comprehensive LP dashboard showing positions, earnings, and analytics
  */
 export function LpDashboard() {
+  const { address } = useAccount();
   const [activeTab, setActiveTab] = useState<"active" | "history">("active");
 
-  const activePositions = mockPositions.filter((p) => p.status === "active");
+  // Get real LP earnings data
+  const { data: lpEarnings, isLoading: lpEarningsLoading } =
+    useLPEarnings(address);
+
+  // Use real data if available, otherwise fall back to mock data
+  const activePositions = lpEarnings?.activePositions || [];
   const historicalPositions = mockPositions.filter(
     (p) => p.status === "withdrawn"
   );
 
-  const totalValue = activePositions.reduce((sum, p) => sum + p.value, 0);
-  const totalFees24h = activePositions.reduce((sum, p) => sum + p.fees24h, 0);
-  const totalFeesEarned = mockPositions.reduce(
-    (sum, p) => sum + p.feesTotal,
-    0
-  );
-  const avgApy =
-    activePositions.length > 0
-      ? activePositions.reduce((sum, p) => sum + p.apy, 0) /
-        activePositions.length
-      : 0;
+  const totalValue = lpEarnings
+    ? parseFloat(lpEarnings.totalValue)
+    : activePositions.reduce((sum, p) => sum + Number(p.value), 0);
+  const totalFeesEarned = lpEarnings
+    ? parseFloat(lpEarnings.totalFeesEarned)
+    : mockPositions.reduce((sum, p) => sum + p.feesTotal, 0);
+  const totalLPFees = lpEarnings ? parseFloat(lpEarnings.totalLPFees) : 0;
+  const avgApy = 12.5; // Mock APY for now
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -125,7 +131,8 @@ export function LpDashboard() {
               <DollarSign className="w-6 h-6 text-primary" />
             </div>
             <div className="text-2xl font-bold mb-1">
-              ${totalValue.toLocaleString()}
+              {lpEarningsLoading ? "..." : formatPrice(totalValue.toString())}{" "}
+              wDAG
             </div>
             <div className="text-sm text-muted-foreground">Total Value</div>
           </div>
@@ -135,9 +142,10 @@ export function LpDashboard() {
               <TrendingUp className="w-6 h-6 text-secondary" />
             </div>
             <div className="text-2xl font-bold mb-1">
-              ${totalFees24h.toFixed(2)}
+              {lpEarningsLoading ? "..." : formatPrice(totalLPFees.toString())}{" "}
+              wDAG
             </div>
-            <div className="text-sm text-muted-foreground">24h Fees</div>
+            <div className="text-sm text-muted-foreground">Total LP Fees</div>
           </div>
 
           <div className="glass-card p-6 text-center">
@@ -145,7 +153,10 @@ export function LpDashboard() {
               <Droplets className="w-6 h-6 text-accent" />
             </div>
             <div className="text-2xl font-bold mb-1">
-              ${totalFeesEarned.toFixed(2)}
+              {lpEarningsLoading
+                ? "..."
+                : formatPrice(totalFeesEarned.toString())}{" "}
+              wDAG
             </div>
             <div className="text-sm text-muted-foreground">
               Total Fees Earned
@@ -186,7 +197,12 @@ export function LpDashboard() {
           </div>
 
           <TabsContent value="active" className="space-y-4">
-            {activePositions.length === 0 ? (
+            {lpEarningsLoading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading LP positions...</p>
+              </div>
+            ) : activePositions.length === 0 ? (
               <div className="text-center py-12">
                 <Droplets className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
                 <h3 className="text-lg font-semibold mb-2">
@@ -215,12 +231,12 @@ export function LpDashboard() {
                           {position.marketTitle}
                         </h3>
                         <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                          <span>Added {formatDate(position.dateAdded)}</span>
+                          <span>LP Position</span>
                           <Badge
                             variant="outline"
                             className="text-xs border-secondary text-secondary"
                           >
-                            APY: {position.apy.toFixed(1)}%
+                            Active
                           </Badge>
                         </div>
                       </div>
@@ -238,34 +254,32 @@ export function LpDashboard() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div>
                         <div className="text-sm text-muted-foreground">
-                          LP Shares
+                          LP Tokens
                         </div>
-                        <div className="font-semibold">
-                          {position.lpShares.toFixed(2)}
-                        </div>
+                        <div className="font-semibold">{position.lpTokens}</div>
                       </div>
                       <div>
                         <div className="text-sm text-muted-foreground">
                           Value
                         </div>
                         <div className="font-semibold">
-                          ${position.value.toLocaleString()}
+                          {formatPrice(position.value)} wDAG
                         </div>
                       </div>
                       <div>
                         <div className="text-sm text-muted-foreground">
-                          24h Fees
+                          Fees Earned
                         </div>
                         <div className="font-semibold text-secondary">
-                          ${position.fees24h.toFixed(2)}
+                          {formatPrice(position.feesEarned)} wDAG
                         </div>
                       </div>
                       <div>
                         <div className="text-sm text-muted-foreground">
-                          Total Fees
+                          Value per Token
                         </div>
                         <div className="font-semibold text-secondary">
-                          ${position.feesTotal.toFixed(2)}
+                          {formatPrice(position.valuePerToken)} wDAG
                         </div>
                       </div>
                     </div>

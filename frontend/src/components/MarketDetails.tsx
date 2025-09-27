@@ -208,7 +208,7 @@ export function MarketDetails({
               step="0.1"
             />
             <p className="text-xs text-muted-foreground">
-              Amount of BDAG you'll provide as initial liquidity
+              Amount of BDAG you&apos;ll provide as initial liquidity
             </p>
           </div>
 

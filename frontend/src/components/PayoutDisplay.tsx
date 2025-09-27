@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { usePayouts } from "@/hooks/usePayouts";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { config } from "@/configs";
 import { MARKET_ABIS } from "@/lib/marketABIs";
 import { Loader2, Trophy, Coins, AlertCircle } from "lucide-react";
 import { toast } from "react-toastify";
@@ -17,8 +16,12 @@ interface PayoutDisplayProps {
 export function PayoutDisplay({ market }: PayoutDisplayProps) {
   const { payoutState, fetchPayoutInfo } = usePayouts();
   const { writeContractAsync, isPending } = useWriteContract();
-  const { data: hash, isSuccess, error } = useWaitForTransactionReceipt({
-    hash: payoutState.data?.txHash as `0x${string}`,
+  const {
+    data: hash,
+    isSuccess,
+    error,
+  } = useWaitForTransactionReceipt({
+    hash: undefined, // No transaction hash in payout state
   });
 
   // Fetch payout info when component mounts or market changes
@@ -92,7 +95,13 @@ export function PayoutDisplay({ market }: PayoutDisplayProps) {
 
   if (!payoutState.data) return null;
 
-  const { outcomeBalances, totalPotentialPayout, canClaim, marketResolved, winningOutcome } = payoutState.data;
+  const {
+    outcomeBalances,
+    totalPotentialPayout,
+    canClaim,
+    marketResolved,
+    winningOutcome,
+  } = payoutState.data;
 
   // Don't show anything if user has no positions
   if (outcomeBalances.length === 0) {
@@ -126,11 +135,15 @@ export function PayoutDisplay({ market }: PayoutDisplayProps) {
       <CardContent className="space-y-4">
         {/* Outcome Token Balances */}
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-muted-foreground">Holdings</h4>
+          <h4 className="text-sm font-medium text-muted-foreground">
+            Holdings
+          </h4>
           {outcomeBalances.map((balance) => {
-            const isWinning = marketResolved && balance.outcomeIndex === winningOutcome;
-            const isLosing = marketResolved && balance.outcomeIndex !== winningOutcome;
-            
+            const isWinning =
+              marketResolved && balance.outcomeIndex === winningOutcome;
+            const isLosing =
+              marketResolved && balance.outcomeIndex !== winningOutcome;
+
             return (
               <div
                 key={balance.outcomeIndex}

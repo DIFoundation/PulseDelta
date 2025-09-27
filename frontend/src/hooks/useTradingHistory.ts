@@ -4,7 +4,6 @@ import { readContract, getPublicClient } from "@wagmi/core";
 import { config } from "@/configs";
 import { MARKET_ABIS } from "@/lib/marketABIs";
 import { decodeEventLog } from "viem";
-import { toast } from "react-toastify";
 import type { Market } from "@/types/market";
 
 interface TradeRecord {
@@ -77,19 +76,23 @@ export function useTradingHistory() {
         });
 
         // Parse the event logs
-        const events = logs.map((log: any) => {
+        const events = logs.map((log: unknown) => {
           const decoded = decodeEventLog({
             abi: MARKET_ABIS[
               `${market.type}Market` as keyof typeof MARKET_ABIS
             ],
-            data: log.data,
-            topics: log.topics,
+            data: (log as { data: `0x${string}` }).data,
+            topics: (log as { topics: `0x${string}`[] }).topics as [
+              signature: `0x${string}`,
+              ...args: `0x${string}`[]
+            ],
           });
           return {
             args: decoded.args,
-            blockNumber: log.blockNumber,
-            logIndex: log.logIndex,
-            transactionHash: log.transactionHash,
+            blockNumber: (log as { blockNumber: bigint }).blockNumber,
+            logIndex: (log as { logIndex: number }).logIndex,
+            transactionHash: (log as { transactionHash: `0x${string}` })
+              .transactionHash,
           };
         });
 
@@ -117,8 +120,18 @@ export function useTradingHistory() {
         }
 
         // Convert events to TradeRecord format
-        const trades: TradeRecord[] = events.map((event: any) => {
-          const { user, token, shares, cost, fee } = event.args as any;
+        const trades: TradeRecord[] = events.map((event: unknown) => {
+          const { user, token, shares, cost, fee } = (
+            event as {
+              args: {
+                user: string;
+                token: string;
+                shares: bigint;
+                cost: bigint;
+                fee: bigint;
+              };
+            }
+          ).args;
 
           // Determine outcome index based on token address
           let outcomeIndex = 0;
@@ -135,14 +148,18 @@ export function useTradingHistory() {
           }
 
           return {
-            id: `${market.address}_${outcomeIndex}_${event.blockNumber}_${event.logIndex}`,
+            id: `${market.address}_${outcomeIndex}_${
+              (event as { blockNumber: bigint }).blockNumber
+            }_${(event as { logIndex: number }).logIndex}`,
             marketAddress: market.address!,
             outcomeIndex,
             outcome,
             shares: Number(shares) / 1e18,
             costBasis: (Number(cost) + Number(fee)) / 1e18,
-            timestamp: Number(event.blockNumber) * 1000, // Approximate timestamp
-            txHash: event.transactionHash,
+            timestamp:
+              Number((event as { blockNumber: bigint }).blockNumber) * 1000, // Approximate timestamp
+            txHash: (event as { transactionHash: `0x${string}` })
+              .transactionHash,
           };
         });
 

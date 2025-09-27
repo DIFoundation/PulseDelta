@@ -60,7 +60,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             pauseOnHover
             theme="dark"
             toastClassName="glass-card border-glass-border"
-            bodyClassName="text-foreground"
+            className="text-foreground"
           />
         </ThemeProvider>
       </QueryClientProvider>

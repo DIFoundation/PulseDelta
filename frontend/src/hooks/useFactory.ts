@@ -2,8 +2,6 @@ import React from "react";
 import {
   useWriteContract,
   useWaitForTransactionReceipt,
-  useReadContract,
-  useReadContracts,
   useAccount,
 } from "wagmi";
 import { waitForTransactionReceipt } from "@wagmi/core";
@@ -18,8 +16,8 @@ import type {
   CreateMarketParams,
   MarketCategory,
   Market,
+  OutcomeShares,
 } from "@/types/market";
-import { log } from "console";
 
 /**
  * Get the appropriate oracle address based on market category
@@ -133,12 +131,15 @@ export function useFactory() {
       const receipt = await waitForTransactionReceipt(config, { hash });
 
       // Get the market address from the event logs
-      const marketCreatedEvent = receipt.logs.find((log: any) => {
+      const marketCreatedEvent = receipt.logs.find((log: unknown) => {
         try {
           const decoded = decodeEventLog({
             abi: ABI.binaryFactory,
-            data: log.data,
-            topics: log.topics,
+            data: (log as { data: `0x${string}` }).data,
+            topics: (log as { topics: `0x${string}`[] }).topics as [
+              signature: `0x${string}`,
+              ...args: `0x${string}`[]
+            ],
           });
           return decoded.eventName === "MarketCreated";
         } catch {
@@ -149,12 +150,16 @@ export function useFactory() {
       if (marketCreatedEvent) {
         const decoded = decodeEventLog({
           abi: ABI.binaryFactory,
-          data: marketCreatedEvent.data,
-          topics: marketCreatedEvent.topics,
+          data: (marketCreatedEvent as { data: `0x${string}` }).data,
+          topics: (marketCreatedEvent as { topics: `0x${string}`[] })
+            .topics as [signature: `0x${string}`, ...args: `0x${string}`[]],
         });
 
-        const marketAddress = (decoded.args as any).market;
-        const marketId = (decoded.args as any).marketId;
+        const marketAddress = (
+          decoded.args as unknown as { market: `0x${string}` }
+        ).market;
+        const marketId = (decoded.args as unknown as { marketId: bigint })
+          .marketId;
 
         return {
           hash,
@@ -224,12 +229,15 @@ export function useFactory() {
       const receipt = await waitForTransactionReceipt(config, { hash });
 
       // Get the market address from the event logs
-      const marketCreatedEvent = receipt.logs.find((log: any) => {
+      const marketCreatedEvent = receipt.logs.find((log: unknown) => {
         try {
           const decoded = decodeEventLog({
             abi: ABI.multiFactory,
-            data: log.data,
-            topics: log.topics,
+            data: (log as { data: `0x${string}` }).data,
+            topics: (log as { topics: `0x${string}`[] }).topics as [
+              signature: `0x${string}`,
+              ...args: `0x${string}`[]
+            ],
           });
           return decoded.eventName === "MarketCreated";
         } catch {
@@ -240,12 +248,16 @@ export function useFactory() {
       if (marketCreatedEvent) {
         const decoded = decodeEventLog({
           abi: ABI.multiFactory,
-          data: marketCreatedEvent.data,
-          topics: marketCreatedEvent.topics,
+          data: (marketCreatedEvent as { data: `0x${string}` }).data,
+          topics: (marketCreatedEvent as { topics: `0x${string}`[] })
+            .topics as [signature: `0x${string}`, ...args: `0x${string}`[]],
         });
 
-        const marketAddress = (decoded.args as any).market;
-        const marketId = (decoded.args as any).marketId;
+        const marketAddress = (
+          decoded.args as unknown as { market: `0x${string}` }
+        ).market;
+        const marketId = (decoded.args as unknown as { marketId: bigint })
+          .marketId;
 
         return {
           hash,
@@ -320,12 +332,15 @@ export function useFactory() {
       const receipt = await waitForTransactionReceipt(config, { hash });
 
       // Get the market address from the event logs
-      const marketCreatedEvent = receipt.logs.find((log: any) => {
+      const marketCreatedEvent = receipt.logs.find((log: unknown) => {
         try {
           const decoded = decodeEventLog({
             abi: ABI.scalarFactory,
-            data: log.data,
-            topics: log.topics,
+            data: (log as { data: `0x${string}` }).data,
+            topics: (log as { topics: `0x${string}`[] }).topics as [
+              signature: `0x${string}`,
+              ...args: `0x${string}`[]
+            ],
           });
           return decoded.eventName === "MarketCreated";
         } catch {
@@ -340,8 +355,11 @@ export function useFactory() {
           topics: marketCreatedEvent.topics,
         });
 
-        const marketAddress = (decoded.args as any).market;
-        const marketId = (decoded.args as any).marketId;
+        const marketAddress = (
+          decoded.args as unknown as { market: `0x${string}` }
+        ).market;
+        const marketId = (decoded.args as unknown as { marketId: bigint })
+          .marketId;
 
         return {
           hash,
@@ -482,7 +500,7 @@ export function useFactory() {
         ? ABI.multiFactory
         : ABI.scalarFactory;
 
-    return useReadContract({
+    return readContract(config, {
       address: factoryAddress as `0x${string}`,
       abi: factoryAbi,
       functionName: "getMarketsByStatus",
@@ -626,7 +644,7 @@ export function useFactory() {
         }
 
         // Read real market data for outcome shares
-        let outcomeShares: any[] = [];
+        let outcomeShares: OutcomeShares[] = [];
         let participantCount = 0;
         let totalVolume = "0";
 
@@ -658,7 +676,8 @@ export function useFactory() {
             const noPriceDecimal = Number(noPrice) / 1e18;
 
             // Extract market stats
-            const [participants, volume, yesReserves, noReserves] = marketStats as [bigint, bigint, bigint, bigint];
+            const [participants, volume, yesReserves, noReserves] =
+              marketStats as [bigint, bigint, bigint, bigint];
             participantCount = Number(participants);
             totalVolume = (Number(volume) / 1e18).toString();
 
@@ -674,17 +693,17 @@ export function useFactory() {
             outcomeShares = [
               {
                 outcomeIndex: 0,
-                price: yesPriceDecimal.toFixed(3),
                 totalShares: (Number(yesReserves) / 1e18).toFixed(3),
-                holders: Math.floor(participantCount / 2), // Rough estimate
-                priceChange24h: 0, // Would need historical data
+                price: yesPriceDecimal.toFixed(3),
+                priceChange24h: 0,
+                holders: Math.floor(participantCount / 2),
               },
               {
                 outcomeIndex: 1,
-                price: noPriceDecimal.toFixed(3),
                 totalShares: (Number(noReserves) / 1e18).toFixed(3),
-                holders: Math.floor(participantCount / 2), // Rough estimate
-                priceChange24h: 0, // Would need historical data
+                price: noPriceDecimal.toFixed(3),
+                priceChange24h: 0,
+                holders: Math.floor(participantCount / 2),
               },
             ];
           } else if (type === "multi") {
@@ -702,39 +721,42 @@ export function useFactory() {
 
             outcomeShares = marketOutcomes.map((_, index) => ({
               outcomeIndex: index,
+              totalShares: "0",
               price: (Number(prices[index]) / 1e18).toFixed(3),
-              totalShares: "0", // Would need to track this
-              holders: 0, // Would need to track this
               priceChange24h: 0,
+              holders: Math.floor(participantCount / marketOutcomes.length),
             }));
           } else if (type === "scalar") {
             // For scalar markets, use default prices
             outcomeShares = [
               {
                 outcomeIndex: 0,
-                price: "0.500",
                 totalShares: "0",
-                holders: 0,
+                price: "0.500",
                 priceChange24h: 0,
+                holders: 0,
               },
               {
                 outcomeIndex: 1,
-                price: "0.500",
                 totalShares: "0",
-                holders: 0,
+                price: "0.500",
                 priceChange24h: 0,
+                holders: 0,
               },
             ];
           }
         } catch (error) {
-          console.warn(`⚠️ Failed to read market stats for ${marketAddress}:`, error);
+          console.warn(
+            `⚠️ Failed to read market stats for ${marketAddress}:`,
+            error
+          );
           // Fallback to mock data
           outcomeShares = marketOutcomes.map((_, index) => ({
             outcomeIndex: index,
-            price: (1 / marketOutcomes.length).toFixed(3),
             totalShares: "0",
-            holders: 0,
+            price: (1 / marketOutcomes.length).toFixed(3),
             priceChange24h: 0,
+            holders: 0,
           }));
         }
 
@@ -861,7 +883,7 @@ export function useFactory() {
         return null;
       }
     },
-    [readContract]
+    []
   );
 
   // Helper functions

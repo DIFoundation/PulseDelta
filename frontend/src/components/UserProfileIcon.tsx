@@ -2,7 +2,6 @@
 
 import { useAccount } from "wagmi";
 import { User, Wallet } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useUserProfile } from "@/hooks/useUserProfile";
 
@@ -16,7 +15,8 @@ export function UserProfileIcon({
   size = "md",
 }: UserProfileIconProps) {
   const { address, isConnected } = useAccount();
-  const { userStats } = useUserProfile(address);
+  const { data } = useUserProfile(address);
+  const { userStats } = data || {};
 
   const getVolumeMilestone = (volume: number) => {
     if (volume >= 1000000) return { level: "Whale", color: "bg-purple-500" };
@@ -71,5 +71,3 @@ export function UserProfileIcon({
     </div>
   );
 }
-
-

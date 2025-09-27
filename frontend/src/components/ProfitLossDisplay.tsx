@@ -2,13 +2,7 @@ import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTradingHistory } from "@/hooks/useTradingHistory";
-import {
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  Trophy,
-  AlertCircle,
-} from "lucide-react";
+import { TrendingUp, Minus, Trophy, AlertCircle } from "lucide-react";
 import type { Market } from "@/types/market";
 
 interface ProfitLossDisplayProps {
@@ -179,7 +173,8 @@ export function ProfitLossDisplay({ market }: ProfitLossDisplayProps) {
               your outcome is correct
             </li>
             <li>
-              • If market resolves in your favor, you'll receive the full payout
+              • If market resolves in your favor, you&apos;ll receive the full
+              payout
             </li>
             <li>
               • If market resolves against you, your tokens become worthless
